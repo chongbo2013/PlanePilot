@@ -6,7 +6,7 @@ Another Top-Down Shooter Clone was initially ported to LibGDX from A 'Sprite Kit
 
 ### Acknowledgements
 
-Artwork and Code Inspiration from: http://code.tutsplus.com/tutorials/build-an-airplane-game-with-sprite-kit-enemies-emitters--mobile-19916
+None
 
 ### Full Project files
 
@@ -15,6 +15,9 @@ Git Repo: https://github.com/sscholle/PlanePilot.git
 
 ##TODO List:
 
+### General
+
+*   clouds, particles
 
 ### Bullet.java
 
