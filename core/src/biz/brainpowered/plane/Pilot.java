@@ -3,24 +3,30 @@ package biz.brainpowered.plane;
 import biz.brainpowered.util.Util;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
-import com.badlogic.gdx.Input.*;
 import java.util.ArrayList;
-import java.util.Vector;
 
 
 public class Pilot extends ApplicationAdapter implements ApplicationListener
 {
-    // New Refactored Classe HEre
     Debug debug;
     Plane plane;
-    ExplosionFactory explosionFactory;
     Ground ground;
+    ExplosionFactory explosionFactory;
+    ArrayList<Explosion> expCollection = new ArrayList<Explosion>();
     EnemyFactory enemyFactory1;
     EnemyFactory enemyFactory2;
+    ArrayList<Enemy> enemyCollection = new ArrayList<Enemy>();
+    BulletFactory bulletFactory;
+    ArrayList<Bullet> bulletCollection = new ArrayList<Bullet>();
 
     // TODO: UI Class
     SpriteBatch batch;
@@ -36,40 +42,40 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
     Integer score;
     float lastTimeScore;
 
-    ArrayList<Enemy> enemyCollection = new ArrayList<Enemy>();// = new Sprite();
-    Integer enemyCollectionSize;
-
-    ArrayList<Explosion> expCollection = new ArrayList<Explosion>();// = new Sprite();
-    Integer expCollectionSize;
-
-    // Functions/Factories
-    BulletFactory bulletFactory;
-
-    ArrayList<Bullet> bulletCollection = new ArrayList<Bullet>();
-    Integer bulletCollectionSize = 0;
-
     // SOUNDS:
     Sound pigeon;
     Enemy tmp;
     Camera camera;
 
+    //used to make the light flicker
+    public float zAngle;
+    public static final float zSpeed = 15.0f;
+    public static final float PI2 = 3.1415926535897932384626433832795f * 2.0f;
+
+    private boolean	lightMove = false;
+    private boolean lightOscillate = false;
+    private Texture light;
+    private FrameBuffer fbo;
+
+    //read our shader files
+    private String vertexShader;// = Gdx.files.internal("shaders/vertexShader.glsl").readString();
+    private String defaultPixelShader;// = Gdx.files.internal("shaders/defaultPixelShader.glsl").readString();
+    private String finalPixelShader;// =  Gdx.files.internal("shaders/pixelShader.glsl").readString();
+    private ShaderProgram defaultShader;
+    private ShaderProgram finalShader;
+
+    //values passed to the shader
+    public static final float ambientIntensity = .99f;
+    public static final Vector3 ambientColor = new Vector3(0.99f, 0.99f, 0.99f);
+
     @Override
     public void create ()
     {
+        // viewport
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
-
-        // viewport
         camera = new OrthographicCamera(appWidth, appHeight);
         camera.update();
-
-        // TODO: move Score Models into GameManager
-        lastTimeScore = 0.0f;
-        score = 0;
-
-        enemyCollectionSize = 0;
-        expCollectionSize = 0;
-
         batch = new SpriteBatch();
 
         // Explosion Sound
@@ -77,6 +83,13 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
 
         // Refactored Classes Init Here
         debug = new Debug();
+
+
+        //read our shader files
+        vertexShader = Gdx.files.internal("shaders/vertexShader.glsl").readString();
+        defaultPixelShader = Gdx.files.internal("shaders/defaultPixelShader.glsl").readString();
+        finalPixelShader =  Gdx.files.internal("shaders/pixelShader.glsl").readString();
+
 
         // asset manager to load asset config and generate types of Config objects
         PlaneConfig pc = new PlaneConfig();
@@ -98,17 +111,30 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
         enemyFactory2 = new EnemyFactory("airplane/PLANE_2_N.png", planeScale);
         enemyFactory2.init();
 
-
         bulletFactory = new BulletFactory("airplane/B_2.png", 0.5f);
         bulletFactory.init();
         plane.setBulletFactory(bulletFactory);
 
+        ShaderProgram.pedantic = false;
+        defaultShader = new ShaderProgram(vertexShader, defaultPixelShader);
+        finalShader = new ShaderProgram(vertexShader, finalPixelShader);
 
-        playerState = PlayerState.NORMAL;
+        finalShader.begin();
+        finalShader.setUniformi("u_lightmap", 1);
+        finalShader.setUniformf("ambientColor", ambientColor.x, ambientColor.y,
+                ambientColor.z, ambientIntensity);
+        finalShader.end();
+
+        light = new Texture("light.png");
+
+        playerState = PlayerState.NORMAL; // TODO: Can use real enums too
+
+        // TODO: move Score Models into GameManager
+        lastTimeScore = 0.0f;
+        score = 0;
 //
 //        // control management
 //        directionKeyReleased = true;
-//
 
         scheduleEnemies();
     }
@@ -126,7 +152,7 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
     {
         // TODO: Determine condition for creating new Enemies
         Integer GoOrNot = Math.round((float)Math.random());
-        System.out.println("GoOrNot: "+GoOrNot);
+        //System.out.println("GoOrNot: "+GoOrNot);
         if(GoOrNot == 1){
             Enemy enemy;
 
@@ -139,7 +165,6 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
 
             enemy.initPath(appWidth, appHeight);
             enemyCollection.add(enemy);
-            enemyCollectionSize++;
         }
     }
 
@@ -159,10 +184,55 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
     @Override
     public void render ()
     {
-        Gdx.gl.glClearColor(0.5f, 1, 0.5f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        final float dt = Gdx.graphics.getRawDeltaTime();
 
+        // Occilation angle
+        zAngle += dt * zSpeed;
+        while(zAngle > PI2)
+            zAngle -= PI2;
+
+        //draw the light to the FBO
+        fbo.begin();
+        batch.setShader(defaultShader);
+        Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
+
+        // TODO:  Explosion Class to implement light source
+        boolean lightOscillate = true;
+        float lightSize = lightOscillate? (100.00f + (25.0f * (float)Math.sin(zAngle)) + 25.0f* MathUtils.random()): 150.0f;
+        //lightSize = 150f;
+        for (int x = 0; x<expCollection.size(); x++)
+        {
+            batch.draw(light,
+                    expCollection.get(x)._x + 32 - (lightSize*0.5f),
+                    expCollection.get(x)._y + 32 - (lightSize*0.5f),
+                    lightSize,
+                    lightSize);
+            // todo: light size to change over time
+        }
+        for (int x = 0; x<bulletCollection.size(); x++)
+        {
+            batch.draw(light,
+                    bulletCollection.get(x)._x + 6 - (lightSize*0.5f),
+                    bulletCollection.get(x)._y + 16 - (lightSize*0.5f),
+                    lightSize,
+                    lightSize);
+        }
+        batch.end();
+        fbo.end();
+
+        //draw the actual scene
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        batch.setShader(finalShader);
+        batch.setColor(0.5f, 0.5f, 1f, 1f);
+        batch.begin();
+        // Bind Textures here - access them in the Shader Program (little trick!)
+        fbo.getColorBufferTexture().bind(1); //this is important! bind the FBO to the 2nd texture unit
+        light.bind(0); //we force the binding of a texture on first texture unit to avoid artefacts
+        //this is because our default and ambiant shader dont use multi texturing...
+        //you can basically bind anything, it doesnt matter
+
         ground.render(batch);
         //timeScore(); // todo scoring in game model
 
@@ -175,23 +245,19 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
 
         plane.render(batch);
 
-
-
-
+        // Bullets
         for (int x = 0; x<bulletCollection.size(); x++)
         {
             bulletCollection.get(x).render(batch);
         }
 
-        // Pre-Refactor - Collision Detection
+        // Enemy Render and Collision Detection
         for (int x = 0; x<enemyCollection.size(); x++)
         {
             enemyCollection.get(x).render(batch);
 
             for (int y = 0; y<bulletCollection.size(); y++)
             {
-
-
                 if(enemyCollection.get(x).checkOverlap(bulletCollection.get(y).getRectangle()))
                 {
                     // sound
@@ -200,7 +266,7 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
                     bulletCollection.get(y).setDispose();
                     tmp = enemyCollection.get(x);
 
-                    expCollection.add(explosionFactory.create((tmp._x + tmp.sprite.getWidth()/2), tmp._y + tmp.sprite.getHeight()/2));
+                    expCollection.add(explosionFactory.create((tmp._x + (tmp.sprite.getWidth()/2) - 50), tmp._y + (tmp.sprite.getHeight()/2) - 50));
                     //expCollectionSize++;
                     score += 250000;
                 }
@@ -219,6 +285,7 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
             expCollection.get(x).render(batch);
         }
 
+        // Batch Rendering Done
         batch.end();
 
         // GC after rendering
@@ -253,6 +320,8 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
         Util.cleanNulls(bulletCollection);
     }
 
+
+    // todo: figure out a Score Model in the Game Manager
     public void timeScore(float timeElapsed)
     {
         if ((lastTimeScore + 1.0f) < (timeElapsed))
@@ -262,8 +331,20 @@ public class Pilot extends ApplicationAdapter implements ApplicationListener
         }
     }
 
+
     @Override
-    public void resize(int width, int height) {
+    public void resize(final int width, final int height) {
+
+        // todo: update camera
+//        cam = new OrthographicCamera(20.0f, 20.0f * height / width);
+//        cam.position.set(cam.viewportWidth / 2.0f, cam.viewportHeight / 2.0f, 0.0f);
+//        cam.update();
+
+        fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+
+        finalShader.begin();
+        finalShader.setUniformf("resolution", width, height);
+        finalShader.end();
     }
 
     @Override

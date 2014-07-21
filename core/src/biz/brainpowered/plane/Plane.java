@@ -175,26 +175,26 @@ public class Plane implements InputProcessor
         {
             if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
 
-//                if(currentMaxAccelX > 0)
-//                    currentMaxAccelX = 0;
+                if(currentMaxAccelX > 0)
+                    currentMaxAccelX = 0;
                 currentMaxAccelX-=baseAcell;
             }
             if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
 
-//                if(currentMaxAccelX < 0)
-//                    currentMaxAccelX = 0;
+                if(currentMaxAccelX < 0)
+                    currentMaxAccelX = 0;
                 currentMaxAccelX+=baseAcell;
             }
             if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
 
-//                if(currentMaxAccelY > 0)
-//                    currentMaxAccelY = 0;
+                if(currentMaxAccelY > 0)
+                    currentMaxAccelY = 0;
                 currentMaxAccelY-=baseAcell;
             }
             if(Gdx.input.isKeyPressed(Input.Keys.UP)){
 
-//                if(currentMaxAccelY < 0)
-//                    currentMaxAccelY = 0;
+                if(currentMaxAccelY < 0)
+                    currentMaxAccelY = 0;
                 currentMaxAccelY+=baseAcell;
             }
             lastInputCheck = elapsedTime;
@@ -281,7 +281,7 @@ public class Plane implements InputProcessor
 
         currentSprite.setX(Math.round(newX));
 
-        System.out.println("newX: "+newX);
+        //System.out.println("newX: "+newX);
         currentSprite.setY(Math.round(newY));
     }
 
@@ -359,6 +359,7 @@ public class Plane implements InputProcessor
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        fireBullet();
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
