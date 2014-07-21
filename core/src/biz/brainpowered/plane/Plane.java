@@ -35,7 +35,7 @@ public class Plane implements InputProcessor
     private Texture normalT;
     private Texture leftT;
     private Texture rightT;
-    // todo: Sprites to hold textures of each
+
     private Sprite normalS;
     private Sprite leftS;
     private Sprite rightS;
