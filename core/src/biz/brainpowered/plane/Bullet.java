@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,10 +22,12 @@ public class Bullet
     float _a;
     float _v;
     boolean _dispose = false;
-
+    Light light;
+    Array<Light> lights;
+    // TODO: Lights to be managed independently (as a singleton)
     float scale;
 
-    public Bullet(Texture texture, float scale, float xPos, float yPos, float angle, float velocity)
+    public Bullet(Texture texture, float scale, float xPos, float yPos, float angle, float velocity, Array<Light>lights)
     {
         sprite = new Sprite(texture);
         sprite.scale(scale);
@@ -35,6 +38,10 @@ public class Bullet
         _v = velocity;
         sprite.setRotation(_a - 90f);
         sprite.setPosition(_x, _y);
+        light = new Light(_x, _y, Light.randomColor(), 0.5f);
+        lights.add(light);
+        lights.removeValue(light, true);
+        this.lights = lights;
     }
 
     public void setDispose()
@@ -45,6 +52,7 @@ public class Bullet
     public void dispose()
     {
         // none
+        lights.removeValue(light, true);
     }
 
     // TODO; possibly implement sub-render updates for higher accuracy under low framerates
@@ -60,6 +68,9 @@ public class Bullet
 
         sprite.setPosition(_x, _y);
         sprite.draw(batch);
+
+        light.x = _x;
+        light.y = _y;
     }
 
     // collision detection

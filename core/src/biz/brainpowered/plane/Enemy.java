@@ -85,8 +85,9 @@ public class Enemy
         myCatmull = new CatmullRomSpline<Vector2>(dataSet, true);
     }
 
-    public void render(SpriteBatch batch)
+    public void updatePos()
     {
+
         current += Gdx.graphics.getDeltaTime() * speed;
         if(current >= 1)
             current -= 1;
@@ -95,7 +96,12 @@ public class Enemy
         _x = out.x;
         _y = out.y;
         sprite.setPosition(_x, _y);
+    }
+
+    public void render(SpriteBatch batch)
+    {
         sprite.draw(batch);
+        //batch.draw(this.sprite.getTexture(), _x, _y);
     }
 
     public static double calcRotationAngleInDegrees(float cX, float cY, float tX, float tY)

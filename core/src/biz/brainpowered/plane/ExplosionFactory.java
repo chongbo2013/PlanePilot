@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * Created by sebastian on 2014/07/18.
@@ -18,13 +19,15 @@ public class ExplosionFactory {
     int columns;
     int rows;
     float frameInterval;
+    Array<Light> lightArray;
 
-    public ExplosionFactory(String texturePath, int columns, int rows, float interval)
+    public ExplosionFactory(String texturePath, int columns, int rows, float interval, Array<Light> lightArray)
     {
         this.texturePath = texturePath;
         this.columns = columns;
         this.rows = rows;
         frameInterval = interval;
+        this.lightArray = lightArray;
     }
 
     public boolean init()
@@ -57,6 +60,6 @@ public class ExplosionFactory {
 
     public Explosion create(float x, float y)
     {
-        return new Explosion(animation, x, y);
+        return new Explosion(animation, x, y, this.lightArray);
     }
 }
