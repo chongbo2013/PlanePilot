@@ -18,6 +18,7 @@ uniform vec3 Falloff;         //attenuation coefficients
 
 //const int maxLights = 32;
 
+// TODO: we need to supporte vec3 arrays to push multiple light sources into here
 void main() {
     const int maxLights = 32;
     // Store our Sum of lights on the Render

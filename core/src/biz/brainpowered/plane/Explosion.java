@@ -15,8 +15,10 @@ import com.badlogic.gdx.utils.Array;
 public class Explosion {
 
     Animation animation;
+
     float _x;
     float _y;
+
     float elapsedTime = 0.0f;
     Light light;
 
@@ -35,6 +37,7 @@ public class Explosion {
         this.lights = lights;
         light = new Light(_x + centerOriginX, _y + centerOriginY, Light.YELLOW, 1.5f, false, true);
         lights.add(light);
+
         this.animation = animation;
     }
 

@@ -58,7 +58,6 @@ public class Plane implements InputProcessor
     Sprite propeller;
     Integer propellerNumber;
 
-
     // TODO: Movement Class
     double currentMaxAccelX;
     double currentMaxAccelY;
@@ -127,7 +126,6 @@ public class Plane implements InputProcessor
             currentSprite.set(normalS);
             currentSprite.setOrigin(normalS.getWidth() / 2, 0);
 
-
             // some old pasty here - move paths to config
             planeShadowTexture = new Texture(Gdx.files.internal("airplane/PLANE_8_SHADOW.png"));
             planeShadow = new Sprite(planeShadowTexture);
@@ -143,6 +141,9 @@ public class Plane implements InputProcessor
             propeller.setScale(scale);
 //
             schedulePropeller();
+
+            // control management
+            directionKeyReleased = true;
         }
         catch (Exception e)
         {
@@ -224,7 +225,6 @@ public class Plane implements InputProcessor
                 currentMaxAccelY = accelY;
         }
 
-
         float maxY = appWidth - currentSprite.getWidth();
         float minY = 0;
 
@@ -235,7 +235,7 @@ public class Plane implements InputProcessor
         float newX = 0;
 
         // Choose Currents Plane Sprite based on Movement Direction
-        // Very Inefficent
+        // TODO: optimise, Very Inefficent
         if(currentMaxAccelX > baseAcell){
             newX = (float)currentMaxAccelX * 10;
             currentSprite.setTexture(rightT);
@@ -266,7 +266,6 @@ public class Plane implements InputProcessor
 
         //newXpropeller = Math.min(Math.max((subjectSprite.getWidth()/2),minY),maxY);
         //newYpropeller = Math.min(Math.max(newYpropeller,minX+(subjectSprite.getHeight())-15),maxX+(subjectSprite.getHeight()/2)-5);
-
 
         newX = Math.min(Math.max(newX + currentSprite.getX(), minY), maxY);
         newY = Math.min(Math.max(newY + currentSprite.getY(), minX), maxX);
@@ -299,6 +298,7 @@ public class Plane implements InputProcessor
         propeller.draw(batch);
     }
 
+    // TODO: refactor ones below -->
     // Utility functions (to be refactored)
     public Rectangle getBoundingBox()
     {
@@ -308,7 +308,6 @@ public class Plane implements InputProcessor
     public void setBulletFactory(BulletFactory bf)
     {
         bulletFactory = bf;
-
     }
 
     public void fireBullet()

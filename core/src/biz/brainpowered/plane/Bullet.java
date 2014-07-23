@@ -17,13 +17,17 @@ import com.badlogic.gdx.utils.Array;
 public class Bullet
 {
     Sprite sprite;
+
     float _x;
     float _y;
     float _a;
     float _v;
+
     boolean _dispose = false;
+
     Light light;
     Array<Light> lights;
+
     // TODO: Lights to be managed independently (as a singleton)
     float scale;
 
@@ -32,6 +36,7 @@ public class Bullet
         sprite = new Sprite(texture);
         sprite.scale(scale);
         sprite.setOriginCenter();
+
         _x = xPos;
         _y = yPos;
         _a = angle;

@@ -5,9 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 /**
  * Created by sebastian on 2014/07/21.
  */
-
 class Light {
-
     static Color YELLOW = new Color(0.5f, 0.5f, 0.1f, 0.5f);
     float x, y, scale;
     Color color;
@@ -36,5 +34,4 @@ class Light {
         float intensity = (float)Math.random() * 0.5f + 0.5f;
         return new Color((float)Math.random(), (float)Math.random(), (float)Math.random(), intensity);
     }
-
 }

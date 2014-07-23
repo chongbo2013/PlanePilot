@@ -12,23 +12,22 @@ public class Debug
 {
     // Debug
     BitmapFont font;
+
     final float yOffset = 20;
     final float xOffset = 20;
+
     private float appWidth;
     private float appHeight;
     private float currentOffset = 0f;
 
     public Debug ()
     {
-
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
 
         // should init with a font
         font = new BitmapFont();
         font.setColor(Color.WHITE);
-
-        //
     }
 
     public void draw(SpriteBatch sb, String string)
@@ -44,10 +43,5 @@ public class Debug
     public void dispose()
     {
         font.dispose();
-    }
-
-    public void render (SpriteBatch sb)
-    {
-
     }
 }
