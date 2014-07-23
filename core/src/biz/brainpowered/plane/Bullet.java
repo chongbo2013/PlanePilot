@@ -36,12 +36,14 @@ public class Bullet
         _y = yPos;
         _a = angle;
         _v = velocity;
+        
         sprite.setRotation(_a - 90f);
         sprite.setPosition(_x, _y);
-        light = new Light(_x, _y, Light.randomColor(), 0.5f);
-        lights.add(light);
-        lights.removeValue(light, true);
+
         this.lights = lights;
+        light = new Light(_x, _y, Light.randomColor(), 0.5f, false, true);
+        lights.add(light);
+        // lights.removeValue(light, true);
     }
 
     public void setDispose()
@@ -49,9 +51,7 @@ public class Bullet
         _dispose = true;
     }
 
-    public void dispose()
-    {
-        // none
+    public void dispose(){
         lights.removeValue(light, true);
     }
 

@@ -6,7 +6,7 @@ precision mediump float;
 #endif
 
 varying LOWP vec4 vColor;
-varying vec2 vTexCoord;
+varying vec2 vTexCoord0;
 
 //texture samplers
 uniform sampler2D u_texture; //diffuse map
@@ -17,7 +17,7 @@ uniform vec2 resolution; //resolution of screen
 uniform LOWP vec4 ambientColor; //ambient RGB, alpha channel is intensity 
 
 void main() {
-	vec4 diffuseColor = texture2D(u_texture, vTexCoord);
+	vec4 diffuseColor = texture2D(u_texture, vTexCoord0);
 	vec2 lighCoord = (gl_FragCoord.xy / resolution.xy);
 	vec4 light = texture2D(u_lightmap, lighCoord);
 	

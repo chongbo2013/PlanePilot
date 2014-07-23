@@ -12,11 +12,24 @@ class Light {
     float x, y, scale;
     Color color;
 
-    public Light(float x, float y, Color color, float scale) {
+    // TODO: scale should be replaced by width/height
+
+    // TODO: use lights were specified below
+    boolean lightBumps = false;
+    boolean castShadows = false;
+
+    public Light(float x, float y, Color color, float scale)
+    {
+        new Light(x, y, color, scale, false, false);
+    }
+
+    public Light(float x, float y, Color color, float scale, boolean lightBumps, boolean castShadows) {
         this.x = x;
         this.y = y;
         this.scale = scale;
         this.color = color;
+        this.lightBumps = lightBumps;
+        this.castShadows = castShadows;
     }
 
     static Color randomColor() {

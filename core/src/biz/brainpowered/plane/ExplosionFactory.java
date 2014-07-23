@@ -26,7 +26,7 @@ public class ExplosionFactory {
         this.texturePath = texturePath;
         this.columns = columns;
         this.rows = rows;
-        frameInterval = interval;
+        this.frameInterval = interval;
         this.lightArray = lightArray;
     }
 

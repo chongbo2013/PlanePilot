@@ -19,6 +19,8 @@ public class Explosion {
     float _y;
     float elapsedTime = 0.0f;
     Light light;
+
+    // TODO: LightManager Singleton
     Array<Light> lights;
 
     // pass in Texture Region from Factory
@@ -31,7 +33,7 @@ public class Explosion {
         float centerOriginY = animation.getKeyFrame(0).getRegionHeight() / 2;
 
         this.lights = lights;
-        light = new Light(_x + centerOriginX, _y + centerOriginY, Light.YELLOW, 1.5f);
+        light = new Light(_x + centerOriginX, _y + centerOriginY, Light.YELLOW, 1.5f, false, true);
         lights.add(light);
         this.animation = animation;
     }

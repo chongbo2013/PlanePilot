@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.GdxRuntimeException;
@@ -20,23 +21,29 @@ import java.util.ArrayList;
 public class Pilot implements ApplicationListener
 {
 
-    public static final float DEFAULT_LIGHT_Z = 0.075f;
-    public static final float AMBIENT_INTENSITY = 0.2f;
-    public static final float LIGHT_INTENSITY = 1f;
+    // BUMP Shading
+    public static final float DEFAULT_LIGHT_Z = 0.125f;
+    public static final float AMBIENT_INTENSITY = 0.5f;
+    public static final float LIGHT_INTENSITY = 2f;
 
     public static final Vector3 LIGHT_POS = new Vector3(0f,0f,DEFAULT_LIGHT_Z);
     //Light RGB and intensity (alpha)
-    public static final Vector4f LIGHT_COLOR = new Vector4f(1f, 0.8f, 0.6f, 1f);
+    public static final Vector4f LIGHT_COLOR = new Vector4f(1f, 0.9f, 0.8f, 1f);
 
     //Ambient RGB and intensity (alpha)
-    public static final Vector4f AMBIENT_COLOR = new Vector4f(0.6f, 0.6f, 1f, 0.2f);
+    public static final Vector4f AMBIENT_COLOR = new Vector4f(0.9f, 0.9f, 1f, 0.2f);
 
     //Attenuation coefficients for light falloff
     public static final Vector3 FALLOFF = new Vector3(.4f, 3f, 20f);
 
     private ShaderProgram bumpShader;
+    // End Bump Shader
 
+    private Light tmpLight;
+    private Bullet tmpBullet;
+    private Enemy tmpEnemy;
 
+    // The good Parts
     Debug debug;
     Plane plane;
     Ground ground;
@@ -78,7 +85,7 @@ public class Pilot implements ApplicationListener
     private FrameBuffer fbo;
 
     //read our shader files
-    private String vertPass;
+    //private String vertPass;
     private String vertexShader;
     private String defaultPixelShader;
     private String finalPixelShader;
@@ -148,9 +155,9 @@ public class Pilot implements ApplicationListener
         debug = new Debug();
 
         //read our shader files
-        vertPass = Gdx.files.internal("shaders/shadow/vertpass.glsl").readString();
-        vertexShader = Gdx.files.internal("shaders/vertexShader.glsl").readString();
-        defaultPixelShader = Gdx.files.internal("shaders/defaultPixelShader.glsl").readString();
+        //vertPass = Gdx.files.internal("shaders/shadow/vertpass.glsl").readString();
+        vertexShader = Gdx.files.internal("shaders/default.vertex").readString();
+        defaultPixelShader = Gdx.files.internal("shaders/default.fragment").readString();
         finalPixelShader =  Gdx.files.internal("shaders/pixelShader.glsl").readString();
 
         bumpShader = createShader(vertexShader, Gdx.files.internal("shaders/bumpFrag.glsl").readString());
@@ -185,7 +192,7 @@ public class Pilot implements ApplicationListener
         finalShader = new ShaderProgram(vertexShader, finalPixelShader);
 
         finalShader.begin();
-        finalShader.setUniformi("u_lightmap", 1); //  1 value refers to the FBO binding
+        finalShader.setUniformi("u_lightmap", 1); //  1 value refers to the FBO-to-ShaderProgramTextureUnit  binding
         finalShader.setUniformf("ambientColor", ambientColor.x, ambientColor.y,
                 ambientColor.z, ambientIntensity);
         finalShader.end();
@@ -201,7 +208,7 @@ public class Pilot implements ApplicationListener
 
         // Shadow Map Setup
         //read vertex pass-through shader
-        final String VERT_SRC = Gdx.files.internal("shaders/shadow/vertpass.glsl").readString();
+        //final String VERT_SRC = Gdx.files.internal("shaders/shadow/vertpass.glsl").readString();
 
         planeTex = new Texture(Gdx.files.internal("airplane/PLANE_8_N.png"));
 
@@ -222,9 +229,9 @@ public class Pilot implements ApplicationListener
 
 
         // renders occluders to 1D shadow map
-        shadowMapShader = createShader(VERT_SRC, Gdx.files.internal("shaders/shadow/shadowMap.glsl").readString());
+        shadowMapShader = createShader(vertexShader, Gdx.files.internal("shaders/shadow/shadowMap.glsl").readString());
         // samples 1D shadow map to create the blurred soft shadow
-        shadowRenderShader = createShader(VERT_SRC, Gdx.files.internal("shaders/shadow/shadowRender.glsl").readString());
+        shadowRenderShader = createShader(vertexShader, Gdx.files.internal("shaders/shadow/shadowRender.glsl").readString());
 
         //the occluders
         casterSprites = new Texture("explosion19.png");
@@ -381,7 +388,8 @@ public class Pilot implements ApplicationListener
 
 
 
-        // Shadow Rendering HEre
+        // Shadow Rendering
+        // all stored in the "finalLightMapFBO"
         //clear frame
         Gdx.gl.glClearColor(0.25f,0.25f,0.25f,1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -390,16 +398,17 @@ public class Pilot implements ApplicationListener
             batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
         for (int i=0; i<lights.size; i++)
         {
-            renderLight(lights.get(i));
+            tmpLight = lights.get(i);
+            // only render lights that cast shadows
+            if(tmpLight.castShadows)
+                renderLight(tmpLight);
         }
         if (additive)
             batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        // End Shadow Rendering
 
 
-
-
-
-
+        // Render 'Diffuse' Everything Else (and Put Shadow Maps ontop)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.setShader(finalShader);
         batch.begin();
@@ -416,6 +425,7 @@ public class Pilot implements ApplicationListener
         debug.draw(batch, "Score: "+score);
         debug.draw(batch, "Planes: "+enemyCollection.size());
         debug.draw(batch, "Explosions: "+expCollection.size());
+        debug.draw(batch, "Bullets: "+bulletCollection.size());
         debug.draw(batch, "Lights: "+lights.size);
         debug.reset();
 
@@ -424,32 +434,38 @@ public class Pilot implements ApplicationListener
         // Bullets
         for (int x = 0; x<bulletCollection.size(); x++)
         {
-            bulletCollection.get(x).render(batch);
+            tmpBullet = bulletCollection.get(x);
+            tmpBullet.render(batch);
+            //System.out.println("tmpBullet._x:"+tmpBullet._x);
+            if (tmpBullet._y > appHeight) {
+                bulletCollection.get(x).setDispose();
+            }
         }
 
         // Enemy Render and Collision Detection
         for (int x = 0; x<enemyCollection.size(); x++)
         {
-            enemyCollection.get(x).updatePos();
-            enemyCollection.get(x).render(batch);
+            tmpEnemy = enemyCollection.get(x);
+            tmpEnemy.updatePos();
+            tmpEnemy.render(batch);
 
             for (int y = 0; y<bulletCollection.size(); y++)
             {
-                if(enemyCollection.get(x).checkOverlap(bulletCollection.get(y).getRectangle()))
+                if(tmpEnemy.checkOverlap(bulletCollection.get(y).getRectangle()))
                 {
                     // sound
                     pigeon.play();
-                    enemyCollection.get(x).setDispose();
+                    tmpEnemy.setDispose();
                     bulletCollection.get(y).setDispose();
-                    tmp = enemyCollection.get(x);
+                    //tmp = enemyCollection.get(x);
 
-                    expCollection.add(explosionFactory.create((tmp._x + (tmp.sprite.getWidth()/2) - 50), tmp._y + (tmp.sprite.getHeight()/2) - 50));
+                    expCollection.add(explosionFactory.create((tmpEnemy._x + (tmpEnemy.sprite.getWidth()/2) - 50), tmpEnemy._y + (tmpEnemy.sprite.getHeight()/2) - 50));
                     //expCollectionSize++;
                     score += 250000;
                 }
             }
 
-            if(enemyCollection.get(x).checkOverlap(plane.getBoundingBox()))
+            if(tmpEnemy.checkOverlap(plane.getBoundingBox()))
             {
                 // sound
                 pigeon.play();
@@ -466,24 +482,28 @@ public class Pilot implements ApplicationListener
         batch.end();
 
         // BUMP
-        //update light position, normalized to screen resolution
-
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-//        //reset light Z
-//        if (Gdx.input.isTouched()) {
-//            LIGHT_POS.z = DEFAULT_LIGHT_Z;
-//            System.out.println("New light Z: "+LIGHT_POS.z);
-//        }
-
-        //shader will now be in use...
-
-        //update light position, normalized to screen resolution
-//        float gx = 100 / appWidth;
-//        float gy = 100 / appHeight;
+//        //update light position, normalized to screen resolution
+//
+//        //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+//
+//        //Gdx.gl.glClearColor(0.25f,0.25f,0.25f,1f);
+//
+////        //reset light Z
+////        if (Gdx.input.isTouched()) {
+////            LIGHT_POS.z = DEFAULT_LIGHT_Z;
+////            System.out.println("New light Z: "+LIGHT_POS.z);
+////        }
+//
+//        //shader will now be in use...
+////System.out.println("zangle: "+(((zAngle * appWidth )/ appWidth) * 40));
+////System.out.println("zangle: "+(100.00f + (25.0f * (float)Math.sin(zAngle)) + 25.0f* MathUtils.random()));
+//        //update light position, normalized to screen resolution
+//        float gx = plane.currentSprite.getX();
+//        float gy = plane.currentSprite.getY();
 //
 //        LIGHT_POS.x = gx;
 //        LIGHT_POS.y = gy;
+//
 //
 //        //float[] numbers = new float[]();
 //        float[] myIntArray = new float[(lights.size +1) * 3];
@@ -498,7 +518,7 @@ public class Pilot implements ApplicationListener
 //            ex++;
 //        }
 //
-//        myIntArray[ex] = gx;
+//        myIntArray[ex] = gx ;
 //        ex++;
 //        myIntArray[ex] = gy;
 //        ex++;
@@ -506,15 +526,16 @@ public class Pilot implements ApplicationListener
 //        ex++;
 //
 //        //send a Vector4f to GLSL
-//        bumpShader.setUniformf("LightPos", LIGHT_POS);
-//        bumpShader.setUniform3fv("LightPoss", myIntArray, 0, ex);
 //        bumpShader.setUniformi("lightCount", lights.size + 1);
+//        bumpShader.setUniformf("LightPos", LIGHT_POS);
+//        //bumpShader.setUniform3fv("LightPoss", myIntArray, 0, 1);
+//        //bumpShader.setUniform3fv("LightPoss", myIntArray, 0, ex);
+//       // bumpShader.setUniform3fv("LightPoss", new float[] {gx, gy, DEFAULT_LIGHT_Z}, 0, 1);
 //
 //        batch.setShader(bumpShader);
 //        batch.begin();
 //        //bind normal map to texture unit 1
 //        // or render normals to texture, then bind
-//
 //        planeNormals.bind(1);
 //
 //        //bind diffuse color to texture unit 0
@@ -523,18 +544,20 @@ public class Pilot implements ApplicationListener
 //
 //        //draw the texture unit 0 with our shader effect applied
 //        batch.draw(planeTex, 50, 50);
+//        //batch.draw(planeTex, gx, gy);
 //
 //        batch.end();
         // END BUMP
 
 
-        // Empty out the Light Map once per frame
+        // Empty out the Light Map once per frame (thanks!)
         finalLightMapFBO.begin();
         Gdx.gl.glClearColor(0f,0f,0f,0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         finalLightMapFBO.end();
 
         // GC after rendering
+        // TODO: Note - ArrayLists are lame (use Array<> instead courtesy of LibGDX)
         for (int x = 0; x<enemyCollection.size(); x++)
         {
             if(enemyCollection.get(x)._dispose)
@@ -566,6 +589,7 @@ public class Pilot implements ApplicationListener
         Util.cleanNulls(bulletCollection);
     }
 
+    // Renders Lights that cast shadows - todo: Specify a Separate Shadow Cast Rendering Class
     void renderLight(Light o)
     {
         float mx = o.x;
@@ -637,7 +661,8 @@ public class Pilot implements ApplicationListener
         //STEP 3. render the blurred shadows
 
         finalLightMapFBO.begin();
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        // DONT CLEAR HERE - only after each frame
+        //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         //reset projection matrix to screen !!!
         cam.setToOrtho(false);
