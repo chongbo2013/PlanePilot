@@ -1,22 +1,21 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.render;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
 import org.lwjgl.util.vector.Vector4f;
 
-import static biz.brainpowered.plane.ShaderUtil.createShader;
+import static biz.brainpowered.plane.render.ShaderUtil.createShader;
 
 /**
  * Created by sebastian on 2014/07/23.
- * BumpShader: compose all aspects of Running a Bump Shading Renderer
+ * BumpRenderer: compose all aspects of Running a Bump Shading Renderer
  * TODO: refactor into a Custom SpriteBatcher
  * status: current non functional
  * RnD: passing data (float vec3 arrays) into the shader programs
  */
-public class BumpShader {
+public class BumpRenderer {
 
     // BUMP Shading
     public static final float DEFAULT_LIGHT_Z = 0.125f;
@@ -33,32 +32,40 @@ public class BumpShader {
     //Attenuation coefficients for light falloff
     public static final Vector3 FALLOFF = new Vector3(.4f, 3f, 20f);
 
-    private ShaderProgram bumpShader;
+    private ShaderProgram shaderProgram;
     // End Bump Shader
 
-    public BumpShader () {
+    // Instance Vars
+    String fragmentShaderString;
+    String fragmentShaderPath;
+
+    public BumpRenderer(String path)
+    {
+        fragmentShaderPath = path;
+        fragmentShaderString = "";
 
     }
 
     public boolean init () {
         try
         {
-            bumpShader = createShader(ShaderUtil.defaultVertexShader, Gdx.files.internal("shaders/bumpFrag.glsl").readString());
+            fragmentShaderString = Gdx.files.internal(fragmentShaderPath).readString();
+            shaderProgram = createShader(ShaderUtil.defaultVertexShader, fragmentShaderString);
 
             //setup default uniforms
-            bumpShader.begin();
+            shaderProgram.begin();
 
             //our normal map
-            bumpShader.setUniformi("u_normals", 1); //GL_TEXTURE1
+            shaderProgram.setUniformi("u_normals", 1); //GL_TEXTURE1
 
             //light/ambient colors
             //LibGDX doesn't have Vector4 class at the moment, so we pass them individually...
-            bumpShader.setUniformf("LightColor", LIGHT_COLOR.x, LIGHT_COLOR.y, LIGHT_COLOR.z, LIGHT_INTENSITY);
-            bumpShader.setUniformf("AmbientColor", AMBIENT_COLOR.x, AMBIENT_COLOR.y, AMBIENT_COLOR.z, AMBIENT_INTENSITY);
-            bumpShader.setUniformf("Falloff", FALLOFF);
+            shaderProgram.setUniformf("LightColor", LIGHT_COLOR.x, LIGHT_COLOR.y, LIGHT_COLOR.z, LIGHT_INTENSITY);
+            shaderProgram.setUniformf("AmbientColor", AMBIENT_COLOR.x, AMBIENT_COLOR.y, AMBIENT_COLOR.z, AMBIENT_INTENSITY);
+            shaderProgram.setUniformf("Falloff", FALLOFF);
 
             //LibGDX likes us to end the shader program
-            bumpShader.end();
+            shaderProgram.end();
         }
         catch (Exception e)
         {
@@ -116,13 +123,13 @@ public class BumpShader {
 //        ex++;
 //
 //        //send a Vector4f to GLSL
-//        bumpShader.setUniformi("lightCount", lights.size + 1);
-//        bumpShader.setUniformf("LightPos", LIGHT_POS);
-//        //bumpShader.setUniform3fv("LightPoss", myIntArray, 0, 1);
-//        //bumpShader.setUniform3fv("LightPoss", myIntArray, 0, ex);
-//       // bumpShader.setUniform3fv("LightPoss", new float[] {gx, gy, DEFAULT_LIGHT_Z}, 0, 1);
+//        bumpRenderer.setUniformi("lightCount", lights.size + 1);
+//        bumpRenderer.setUniformf("LightPos", LIGHT_POS);
+//        //bumpRenderer.setUniform3fv("LightPoss", myIntArray, 0, 1);
+//        //bumpRenderer.setUniform3fv("LightPoss", myIntArray, 0, ex);
+//       // bumpRenderer.setUniform3fv("LightPoss", new float[] {gx, gy, DEFAULT_LIGHT_Z}, 0, 1);
 //
-//        batch.setShader(bumpShader);
+//        batch.setShader(bumpRenderer);
 //        batch.begin();
 //        //bind normal map to texture unit 1
 //        // or render normals to texture, then bind
@@ -142,8 +149,8 @@ public class BumpShader {
 
     public void resize (int width, int height)
     {
-        bumpShader.begin();
-        bumpShader.setUniformf("Resolution", width, height);
-        bumpShader.end();
+        shaderProgram.begin();
+        shaderProgram.setUniformf("Resolution", width, height);
+        shaderProgram.end();
     }
 }

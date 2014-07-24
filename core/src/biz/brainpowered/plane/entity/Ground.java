@@ -1,4 +1,4 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;

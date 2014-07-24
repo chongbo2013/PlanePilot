@@ -1,5 +1,6 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.entity;
 
+import biz.brainpowered.plane.model.Light;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,14 +13,14 @@ import com.badlogic.gdx.utils.Array;
  * Time: 2:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Explosion {
+public class Explosion extends Entity {
 
     Animation animation;
 
     float _x;
     float _y;
 
-    float elapsedTime = 0.0f;
+    private float elapsedTime = 0.0f;
     Light light;
 
     // TODO: LightManager Singleton
@@ -51,5 +52,9 @@ public class Explosion {
         light.scale = (float)Math.sin(elapsedTime * (4.2 - elapsedTime)) * 1.0f; //Pulse Scale Value
         batch.draw(animation.getKeyFrame(elapsedTime, false), _x, _y);
         elapsedTime += Gdx.graphics.getDeltaTime();
+    }
+
+    public float getElapsedTime () {
+        return elapsedTime;
     }
 }

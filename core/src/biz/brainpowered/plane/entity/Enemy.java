@@ -1,4 +1,4 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.entity;
 
 
 //import android.graphics.Point; cant have android specific code in the core ::))))
@@ -18,9 +18,8 @@ import com.badlogic.gdx.math.Vector2;
  * Time: 11:21 AM
  * To change this template use File | Settings | File Templates.
  */
-public class Enemy
+public class Enemy extends Entity
 {
-    Sprite sprite;
     float speed = 0.15f;
     float current = 0;
     Vector2 out = new Vector2();
@@ -28,28 +27,23 @@ public class Enemy
     Vector2[] dataSet = new Vector2[4];
     CatmullRomSpline<Vector2> myCatmull;
 
-    float _x;
-    float _y;
-    boolean _dispose = false;
+//    public float _x;
+//    public float _y;
 
+
+    // TODO: abstract the THIS/Sprite positon and dimensions
     public Enemy(Texture texture, float scale, int xPos, int yPos)
     {
-        sprite = new Sprite(texture);
+        super();
 
-        sprite.setSize(scale*texture.getWidth(), scale*texture.getHeight());
-
-        sprite.setOrigin(sprite.getWidth()/2, sprite.getHeight()/2);
-
-        sprite.setPosition(xPos, yPos);
+        _sprite = new Sprite(texture);
+        _sprite.setSize(scale*texture.getWidth(), scale*texture.getHeight());
+        _sprite.setOrigin(_sprite.getWidth()/2, _sprite.getHeight()/2);
+        _sprite.setPosition(xPos, yPos);
         //System.out.println("scale: "+scale);
         //sprite.setScale(scale);
 
         // then init path ()
-    }
-
-    public void setDispose()
-    {
-        _dispose = true;
     }
 
     public void dispose()
@@ -60,19 +54,19 @@ public class Enemy
     public void initPath(int appWidth, int appHeight){
 
         //random values
-        float xStart = Util.getRandomNumberBetween(0 + sprite.getWidth(), appWidth - sprite.getWidth());
-        float xEnd =  Util.getRandomNumberBetween(0+sprite.getWidth(), appWidth-sprite.getWidth());
+        float xStart = Util.getRandomNumberBetween(0 + _sprite.getWidth(), appWidth - _sprite.getWidth());
+        float xEnd =  Util.getRandomNumberBetween(0 + _sprite.getWidth(), appWidth - _sprite.getWidth());
 
         //ControlPoint1
-        float cp1X =  Util.getRandomNumberBetween(0 + sprite.getWidth(), appWidth - sprite.getWidth());
-        float cp1Y =  Util.getRandomNumberBetween(0+sprite.getWidth(), appHeight-sprite.getHeight());
+        float cp1X =  Util.getRandomNumberBetween(0 + _sprite.getWidth(), appWidth - _sprite.getWidth());
+        float cp1Y =  Util.getRandomNumberBetween(0 + _sprite.getWidth(), appHeight - _sprite.getHeight());
 
         //ControlPoint2
-        float cp2X =  Util.getRandomNumberBetween(0+sprite.getWidth(), appWidth-sprite.getWidth());
+        float cp2X =  Util.getRandomNumberBetween(0 + _sprite.getWidth(), appWidth - _sprite.getWidth());
         float cp2Y =  Util.getRandomNumberBetween(0, cp1Y);
 
         Vector2 s = new Vector2(xStart, appHeight);
-        Vector2 e = new Vector2(xEnd, -sprite.getHeight());
+        Vector2 e = new Vector2(xEnd, -_sprite.getHeight());
         Vector2 cp1 = new Vector2(cp1X, cp1Y);
         Vector2 cp2 = new Vector2(cp2X, cp2Y);
 
@@ -92,16 +86,16 @@ public class Enemy
         if(current >= 1)
             current -= 1;
         myCatmull.valueAt(out, current);
-        sprite.setRotation((float)calcRotationAngleInDegrees(_x, _y, out.x, out.y)-180);
+        _sprite.setRotation((float)calcRotationAngleInDegrees(_x, _y, out.x, out.y)-180);
         _x = out.x;
         _y = out.y;
-        sprite.setPosition(_x, _y);
+        _sprite.setPosition(_x, _y);
     }
 
     public void render(SpriteBatch batch)
     {
-        sprite.draw(batch);
-        //batch.draw(this.sprite.getTexture(), _x, _y);
+        _sprite.draw(batch);
+        //batch.draw(this._sprite.getTexture(), _x, _y);
     }
 
     public static double calcRotationAngleInDegrees(float cX, float cY, float tX, float tY)
@@ -136,11 +130,12 @@ public class Enemy
 
     public boolean checkOverlap(Rectangle rectangle)
     {
-        return !(_x > rectangle.x + rectangle.width || _x + sprite.getWidth() < rectangle.x || _y > rectangle.y + rectangle.height || _y + sprite.getHeight() < rectangle.y);
+        return !(_x > rectangle.x + rectangle.width || _x + _sprite.getWidth() < rectangle.x || _y > rectangle.y + rectangle.height || _y + _sprite.getHeight() < rectangle.y);
     }
 
     public void explode()
     {
+        // todo: with light and explosion singleton managers we could easily assign an "explosion strategy" to each entity
         // dispose this
     }
 }

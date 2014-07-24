@@ -1,5 +1,6 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.factory;
 
+import biz.brainpowered.plane.entity.Enemy;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 
@@ -35,5 +36,10 @@ public class EnemyFactory {
     public Enemy create (int xPos, int yPos)
     {
         return new Enemy(texture, scale, xPos, yPos);
+    }
+
+    public void dispose()
+    {
+        texture.dispose();
     }
 }

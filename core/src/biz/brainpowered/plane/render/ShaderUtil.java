@@ -1,4 +1,4 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.render;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -18,8 +18,8 @@ public class ShaderUtil {
         try
         {
             ShaderProgram.pedantic = false;
-            defaultVertexShader = Gdx.files.internal("shaders/default.vertex").readString();
-            getDefaultFragmentShader = Gdx.files.internal("shaders/default.fragment").readString();
+            defaultVertexShader = Gdx.files.internal("shaders/defaultVertex.glsl").readString();
+            getDefaultFragmentShader = Gdx.files.internal("shaders/defaultFragment.glsl").readString();
         }
         catch (Exception e)
         {
@@ -28,6 +28,7 @@ public class ShaderUtil {
 
         return true;
     }
+
     /**
      * Compiles a new instance of the default shader for this batch and returns it. If compilation
      * was unsuccessful, GdxRuntimeException will be thrown.

@@ -1,5 +1,7 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.factory;
 
+import biz.brainpowered.plane.entity.Bullet;
+import biz.brainpowered.plane.model.Light;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.Array;
@@ -8,16 +10,14 @@ import com.badlogic.gdx.utils.Array;
 /**
  * Created by sebastian on 2014/07/18.
  */
-public class BulletFactory //implements GenericFactory
+public class BulletFactory extends EntityFactory
 {
-    Texture texture;
-    String texturePath;
     float scale;
-    Array<Light> lights;
+    Array<Light> lights; // todo: Light Singleton
 
     public BulletFactory (String texturePath, float scale, Array<Light> lights)
     {
-        this.texturePath = texturePath;
+        super(texturePath);
         this.scale = scale;
         this.lights = lights;
     }
@@ -36,13 +36,13 @@ public class BulletFactory //implements GenericFactory
         return true;
     }
 
-    public void dispose()
-    {
-        texture.dispose();
-    }
-
     public Bullet create (float xPos, float yPos, float angle, float velocity)
     {
         return new Bullet(texture, scale, xPos, yPos, angle, velocity, lights);
+    }
+
+    public void dispose()
+    {
+        texture.dispose();
     }
 }

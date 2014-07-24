@@ -1,20 +1,25 @@
 package biz.brainpowered.plane;
 
+import biz.brainpowered.plane.factory.BulletFactory;
+import biz.brainpowered.plane.factory.EnemyFactory;
+import biz.brainpowered.plane.factory.ExplosionFactory;
+import biz.brainpowered.plane.model.Light;
+import biz.brainpowered.plane.model.PlaneConfig;
+import biz.brainpowered.plane.render.BumpRenderer;
+import biz.brainpowered.plane.render.LightMapRenderer;
+import biz.brainpowered.plane.render.ShaderUtil;
+import biz.brainpowered.plane.render.SimpleLightsRenderer;
 import biz.brainpowered.util.Util;
+import biz.brainpowered.plane.entity.*;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
 
 import java.util.ArrayList;
-
-import static biz.brainpowered.plane.ShaderUtil.createShader;
 
 public class Pilot implements ApplicationListener
 {
@@ -23,7 +28,6 @@ public class Pilot implements ApplicationListener
         NORMAL
     };
 
-    private Light tmpLight;
     private Bullet tmpBullet;
     private Enemy tmpEnemy;
 
@@ -39,7 +43,9 @@ public class Pilot implements ApplicationListener
     BulletFactory bulletFactory;
     ArrayList<Bullet> bulletCollection = new ArrayList<Bullet>();
 
-    BumpShader bumpShader; // todo: class name is ambiguous (WIP)
+    BumpRenderer bumpRenderer; // TODO: WIP
+    SimpleLightsRenderer simpleLightsRenderer;
+    LightMapRenderer lightMapRenderer;
 
     // TODO: UI Class
     Texture titleImg; // top be implemented
@@ -61,50 +67,10 @@ public class Pilot implements ApplicationListener
     Enemy tmp;
     Camera camera;
 
-    //used to make the light flicker
-    public float zAngle;
-    public static final float zSpeed = 15.0f;
-    public static final float PI2 = 3.1415926535897932384626433832795f * 2.0f;
-
-    private boolean	lightMove = false;
-    private boolean lightOscillate = false;
-    private FrameBuffer fbo;
-
-    //read our shader files
-    private String finalPixelShader;
-    private ShaderProgram finalShader;
-
-    //values passed to the shader
-    public static final float ambientIntensity = .99f;
-    public static final Vector3 ambientColor = new Vector3(0.99f, 0.99f, 0.99f);
-
-    // Shadow Casting
-    private int lightSize = 256;
-    private float upScale = 1.0f; //for example; try lightSize=128, upScale=1.5f
-
     SpriteBatch batch;
-    OrthographicCamera cam;
     BitmapFont font;
 
-    TextureRegion shadowMap1D; //1 dimensional shadow map
-    TextureRegion occluders;   //occluder map
-    TextureRegion finalLightMap;   //occluder map
-
-    FrameBuffer shadowMapFBO;
-    FrameBuffer occludersFBO;
-
-    FrameBuffer finalLightMapFBO;
-    Texture finalLightMapTex;
-
-    Texture casterSprites;
-    Texture light;
-
-    ShaderProgram shadowMapShader, shadowRenderShader;
-
     Array<Light> lights = new Array<Light>();
-
-    boolean additive = true;
-    boolean softShadows = true;
 
     @Override
     public void create ()
@@ -123,7 +89,8 @@ public class Pilot implements ApplicationListener
         debug = new Debug();
         ShaderUtil.init();
 
-        finalPixelShader =  Gdx.files.internal("shaders/pixelShader.glsl").readString();
+        lightMapRenderer = new LightMapRenderer("shaders/pixelShader.glsl", "shaders/shadow/shadowMap.glsl", "shaders/shadow/shadowRender.glsl", lights);
+        lightMapRenderer.init();
 
         // asset manager to load asset config and generate types of Config objects
         PlaneConfig pc = new PlaneConfig();
@@ -149,13 +116,7 @@ public class Pilot implements ApplicationListener
         bulletFactory.init();
         plane.setBulletFactory(bulletFactory);
 
-        finalShader = new ShaderProgram(ShaderUtil.defaultVertexShader, finalPixelShader);
-        finalShader.begin();
-        finalShader.setUniformi("u_lightmap", 1); //  1 value refers to the FBO-to-ShaderProgramTextureUnit  binding
-        finalShader.setUniformf("ambientColor", ambientColor.x, ambientColor.y, ambientColor.z, ambientIntensity);
-        finalShader.end();
-
-        light = new Texture("light.png");
+        //light = new Texture("light.png");
         planeNormals = new Texture(Gdx.files.internal("airplane/PLANE_8_N_NRM.png"));
 
         playerState = PlayerState.NORMAL; // TODO: Can use real enums too
@@ -168,47 +129,15 @@ public class Pilot implements ApplicationListener
         planeTex = new Texture(Gdx.files.internal("airplane/PLANE_8_N.png"));
 
         // Bump
-        bumpShader = new BumpShader();
-        bumpShader.init();
+        bumpRenderer = new BumpRenderer("shaders/bumpFragment.glsl");
+        bumpRenderer.init();
         // End Bump
 
-        // renders occluders to 1D shadow map
-        shadowMapShader = createShader(ShaderUtil.defaultVertexShader, Gdx.files.internal("shaders/shadow/shadowMap.glsl").readString());
-        // samples 1D shadow map to create the blurred soft shadow
-        shadowRenderShader = createShader(ShaderUtil.defaultVertexShader, Gdx.files.internal("shaders/shadow/shadowRender.glsl").readString());
-
-        //the occluders
-        casterSprites = new Texture("explosion19.png");
-        //the light sprite
-        light = new Texture("light.png");
-
-        //build frame buffers
-        occludersFBO = new FrameBuffer(Pixmap.Format.RGBA8888, lightSize, lightSize, false);
-        occluders = new TextureRegion(occludersFBO.getColorBufferTexture());
-        occluders.flip(false, true);
-
-        //our 1D shadow map, lightSize x 1 pixels, no depth
-        shadowMapFBO = new FrameBuffer(Pixmap.Format.RGBA8888, lightSize, 1, false);
-        Texture shadowMapTex = shadowMapFBO.getColorBufferTexture();
-
-        //use linear filtering and repeat wrap mode when sampling
-        shadowMapTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        shadowMapTex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-
-        //for debugging only; in order to render the 1D shadow map FBO to screen
-        shadowMap1D = new TextureRegion(shadowMapTex);
-        shadowMap1D.flip(false, true);
-
-        finalLightMapFBO = new FrameBuffer(Pixmap.Format.RGBA8888, appWidth, appHeight, false);
-        finalLightMapTex = finalLightMapFBO.getColorBufferTexture();
-
-        finalLightMap = new TextureRegion(finalLightMapTex);
-        finalLightMap.flip(false, true);
+        // Simple Lights
+        simpleLightsRenderer = new SimpleLightsRenderer("light.png", lights);
+        simpleLightsRenderer.init();
 
         font = new BitmapFont();
-
-        cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.setToOrtho(false);
 
         scheduleEnemies();
     }
@@ -249,6 +178,13 @@ public class Pilot implements ApplicationListener
         plane.dispose();
         ground.dispose();
         explosionFactory.dispose();
+        enemyFactory1.dispose();
+        enemyFactory2.dispose();
+        bulletFactory.dispose();
+
+        // TODO: dispose renderers
+
+        // todo: re-init/load shaders on 'reinit'
 
         // pre-refactor
         batch.dispose();
@@ -258,75 +194,16 @@ public class Pilot implements ApplicationListener
     @Override
     public void render ()
     {
-        // Lighting Rendering HEre
+        // delta time is useful for rendering -> pass it into all render/draw functions
         final float dt = Gdx.graphics.getRawDeltaTime();
 
-        // Occilation angle
-        zAngle += dt * zSpeed;
-        while(zAngle > PI2)
-            zAngle -= PI2;
+        simpleLightsRenderer.render(batch);// TODO: get reference for FBO for simple lights and integrate into Final Renderer
 
-        // these are simpler lights - good for ones without Bump/Shadow flags
-        //draw the light to the FBO
-//        fbo.begin();
-//        batch.setShader(defaultShader); // passthrough
-//        Gdx.gl.glClearColor(0f, 0f, 0f, 0f); // clear with white opaque
-//        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-//        batch.begin();
-//
-//        // TODO:  Explosion Class to implement light source
-//        boolean lightOscillate = true;
-//        float lightSize = lightOscillate? (100.00f + (25.0f * (float)Math.sin(zAngle)) + 25.0f* MathUtils.random()): 150.0f;
-//        //lightSize = 150f;
-//        for (int x = 0; x<expCollection.size(); x++)
-//        {
-//            batch.draw(light,
-//                    expCollection.get(x)._x + 32 - (lightSize*0.5f),
-//                    expCollection.get(x)._y + 32 - (lightSize*0.5f),
-//                    lightSize,
-//                    lightSize);
-//            // todo: light size to change over time
-//        }
-//        for (int x = 0; x<bulletCollection.size(); x++)
-//        {
-//            batch.draw(light,
-//                    bulletCollection.get(x)._x + 6 - (lightSize*0.5f),
-//                    bulletCollection.get(x)._y + 16 - (lightSize*0.5f),
-//                    lightSize,
-//                    lightSize);
-//        }
-//        batch.end();
-//        fbo.end();
+        // render lights
+        lightMapRenderer.renderLights(batch, lights, enemyCollection); // todo: implement complete Occlusion entity collection object
 
-
-        // Shadow Rendering
-        // all stored in the "finalLightMapFBO"
-        //clear frame
-        Gdx.gl.glClearColor(0.25f,0.25f,0.25f,1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        if (additive)
-            batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
-        for (int i=0; i<lights.size; i++)
-        {
-            tmpLight = lights.get(i);
-            // only render lights that cast shadows
-            if(tmpLight.castShadows)
-                renderLight(tmpLight);
-        }
-        if (additive)
-            batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        // End Shadow Rendering
-
-
-        // Render 'Diffuse' Everything Else (and Put Shadow Maps ontop)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.setShader(finalShader);
-        batch.begin();
-        finalLightMapFBO.getColorBufferTexture().bind(1); //this is important! bind the FBO to the 2nd texture unit
-        light.bind(0); //we force the binding of a texture on first texture unit to avoid artefacts
-        //this is because our default and ambiant shader dont use multi texturing...
-        //you can basically bind anything, it doesnt matter
+        // render final
+        lightMapRenderer.render(batch);
 
         ground.render(batch);
         //timeScore(); // todo scoring in game model
@@ -343,15 +220,11 @@ public class Pilot implements ApplicationListener
 
         plane.render(batch);
 
-        // Bullets
-        for (int x = 0; x<bulletCollection.size(); x++)
-        {
-            tmpBullet = bulletCollection.get(x);
+        // TODO: Entity Component System will check all Entities for type Renderable (and then do it in the loop)
+        // Render Bullets
+        for (int y = 0; y<bulletCollection.size(); y++) {
+            tmpBullet = bulletCollection.get(y);
             tmpBullet.render(batch);
-            //System.out.println("tmpBullet._x:"+tmpBullet._x);
-            if (tmpBullet._y > appHeight) {
-                bulletCollection.get(x).setDispose();
-            }
         }
 
         // Enemy Render and Collision Detection
@@ -363,26 +236,37 @@ public class Pilot implements ApplicationListener
 
             for (int y = 0; y<bulletCollection.size(); y++)
             {
-                if(tmpEnemy.checkOverlap(bulletCollection.get(y).getRectangle()))
+                tmpBullet = bulletCollection.get(y);
+                //tmpBullet.render(batch);
+
+                //System.out.println("tmpBullet._x:"+tmpBullet._x);
+                if (tmpBullet.getY() > appHeight) {
+                    tmpBullet.setDispose(true);
+                }
+
+                if(tmpEnemy.checkOverlap(tmpBullet.getRectangle()))
                 {
                     // sound
                     pigeon.play();
-                    tmpEnemy.setDispose();
-                    bulletCollection.get(y).setDispose();
+                    tmpEnemy.setDispose(true);
+                    tmpBullet.setDispose(true);
                     //tmp = enemyCollection.get(x);
 
-                    expCollection.add(explosionFactory.create((tmpEnemy._x + (tmpEnemy.sprite.getWidth()/2) - 50), tmpEnemy._y + (tmpEnemy.sprite.getHeight()/2) - 50));
+                    expCollection.add(explosionFactory.create((tmpEnemy.getX() + (tmpEnemy.getSprite().getWidth()/2) - 50), tmpEnemy.getY() + (tmpEnemy.getSprite().getHeight()/2) - 50));
                     //expCollectionSize++;
+
+                    // TODO: Score Manager
                     score += 250000;
                 }
             }
 
-            if(tmpEnemy.checkOverlap(plane.getBoundingBox()))
-            {
-                // sound
-                pigeon.play();
-                // plane dies!
-            }
+            // Collision with Enemy
+//            if(tmpEnemy.checkOverlap(plane.getBoundingBox()))
+//            {
+//                // sound
+//                pigeon.play();
+//                // plane dies!
+//            }
         }
 
         for (int x = 0; x<expCollection.size(); x++)
@@ -392,22 +276,16 @@ public class Pilot implements ApplicationListener
 
         // Batch Rendering Done
         batch.end();
+        lightMapRenderer.end();
 
         // Bump
-        bumpShader.render(batch);
-
-
-        // Empty out the Light Map once per frame (thanks!)
-        finalLightMapFBO.begin();
-        Gdx.gl.glClearColor(0f,0f,0f,0f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        finalLightMapFBO.end();
+        bumpRenderer.render(batch);
 
         // GC after rendering
         // TODO: Note - ArrayLists are lame (use Array<> instead courtesy of LibGDX)
         for (int x = 0; x<enemyCollection.size(); x++)
         {
-            if(enemyCollection.get(x)._dispose)
+            if(enemyCollection.get(x).getDispose())
             {
                 enemyCollection.get(x).dispose();
                 enemyCollection.remove(x);
@@ -416,7 +294,7 @@ public class Pilot implements ApplicationListener
 
         for (int x = 0; x<expCollection.size(); x++)
         {
-            if (expCollection.get(x).elapsedTime > 1.0f){
+            if (expCollection.get(x).getElapsedTime() > 1.0f){
                 expCollection.get(x).dispose();
                 expCollection.remove(x);
             }
@@ -424,7 +302,7 @@ public class Pilot implements ApplicationListener
 
         for (int x = 0; x<bulletCollection.size(); x++)
         {
-            if (bulletCollection.get(x)._dispose){
+            if (bulletCollection.get(x).getDispose()){
                 bulletCollection.get(x).dispose();
                 bulletCollection.remove(x);
             }
@@ -434,107 +312,6 @@ public class Pilot implements ApplicationListener
         Util.cleanNulls(enemyCollection);
         Util.cleanNulls(expCollection);
         Util.cleanNulls(bulletCollection);
-    }
-
-    // Renders Lights that cast shadows - todo: Specify a Separate Shadow Cast Rendering Class
-    void renderLight(Light o)
-    {
-        float mx = o.x;
-        float my = o.y;
-        float lightSize = this.lightSize;//o.scale *
-
-        //STEP 1. render light region to occluder FBO
-
-        //bind the occluder FBO
-        occludersFBO.begin();
-
-        //clear the FBO to WHITE/ TRANSPARENT
-        Gdx.gl.glClearColor(0f,0f,0f,0f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        //set the orthographic camera to the size of our FBO
-        cam.setToOrtho(false, occludersFBO.getWidth(), occludersFBO.getHeight());
-
-        //translate camera so that light is in the center
-        cam.translate(mx - lightSize/2f, my - lightSize/2f);
-
-        //update camera matrices
-        cam.update();
-
-        //set up our batch for the occluder pass
-        batch.setProjectionMatrix(cam.combined);
-        batch.setShader(null); //use default shader
-        batch.begin();
-
-        // ... draw any sprites that will cast shadows here ... //
-        for (int x = 0; x<enemyCollection.size(); x++) {
-            enemyCollection.get(x).render(batch);
-        }
-
-        //end the batch before unbinding the FBO
-        batch.end();
-
-        //unbind the FBO
-        occludersFBO.end();
-
-        //STEP 2. build a 1D shadow map from occlude FBO
-
-        //bind shadow map
-        shadowMapFBO.begin();
-
-        //clear it
-        Gdx.gl.glClearColor(0f,0f,0f,0f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        //set our shadow map shader
-        batch.setShader(shadowMapShader);
-        batch.begin();
-        shadowMapShader.setUniformf("resolution", lightSize, lightSize);
-        shadowMapShader.setUniformf("upScale", upScale);
-
-        //reset our projection matrix to the FBO size
-        cam.setToOrtho(false, shadowMapFBO.getWidth(), shadowMapFBO.getHeight());
-        batch.setProjectionMatrix(cam.combined);
-
-        //draw the occluders texture to our 1D shadow map FBO
-        batch.draw(occluders.getTexture(), 0, 0, lightSize, shadowMapFBO.getHeight());
-
-        //flush batch
-        batch.end();
-
-        //unbind shadow map FBO
-        shadowMapFBO.end();
-
-        //STEP 3. render the blurred shadows
-
-        finalLightMapFBO.begin();
-        // DONT CLEAR HERE - only after each frame
-        //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        //reset projection matrix to screen !!!
-        cam.setToOrtho(false);
-        batch.setProjectionMatrix(cam.combined);
-
-        //set the shader which actually draws the light/shadow
-        batch.setShader(shadowRenderShader);
-        batch.begin();
-
-        shadowRenderShader.setUniformf("resolution", lightSize, lightSize);
-        shadowRenderShader.setUniformf("softShadows", softShadows ? 1f : 0f);
-
-        //set color to light
-        batch.setColor(o.color);
-        float finalSize = lightSize * o.scale;
-
-        //draw centered on light position
-        batch.draw(shadowMap1D.getTexture(), mx-finalSize/2f, my-finalSize/2f, finalSize, finalSize);
-
-        //flush the batch before swapping shaders into the FrameBuffer
-        batch.end();
-        finalLightMapFBO.end();
-
-        //reset color
-        batch.setColor(Color.WHITE);
     }
 
     // todo: figure out a Score Model in the Game Manager
@@ -550,30 +327,20 @@ public class Pilot implements ApplicationListener
     @Override
     public void resize(final int width, final int height)
     {
-        //Shading (2d)
-        cam.setToOrtho(false, width, height);
-        batch.setProjectionMatrix(cam.combined);
-
         // bubble up!
-        bumpShader.resize(width, height);
-
-        // todo: check if FBOs need to be re-inited
-
-        // Lighting
-        //fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
-
-        finalShader.begin();
-        finalShader.setUniformf("resolution", width, height);
-        finalShader.end();
+        bumpRenderer.resize(width, height);
+        simpleLightsRenderer.resize(width, height);
+        lightMapRenderer.resize(width, height, batch);
     }
 
     @Override
     public void pause() {
-
+        // stop timers, unload shaders
     }
 
     @Override
     public void resume() {
         //initPlane();
+        // todo: reinit shaders
     }
 }

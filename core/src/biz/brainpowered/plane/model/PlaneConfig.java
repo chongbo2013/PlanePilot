@@ -1,4 +1,4 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.model;
 
 
 /**
@@ -15,6 +15,7 @@ public class PlaneConfig {
 
     public float scale;
 
+    // TODO: use the ones below
     public String propeller1TP;
     public String propeller2TP;
 

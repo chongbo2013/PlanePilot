@@ -1,5 +1,7 @@
-package biz.brainpowered.plane;
+package biz.brainpowered.plane.factory;
 
+import biz.brainpowered.plane.entity.Explosion;
+import biz.brainpowered.plane.model.Light;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
