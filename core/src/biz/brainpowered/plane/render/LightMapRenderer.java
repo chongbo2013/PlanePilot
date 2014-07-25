@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import org.lwjgl.Sys;
 
 import java.util.ArrayList;
 
@@ -74,6 +75,11 @@ public class LightMapRenderer {
     public boolean init () {
         try
         {
+
+
+            cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            cam.setToOrtho(false);
+
             finalPixelShader =  Gdx.files.internal(finalPixelShaderPath).readString();
 
             // TODO: rename var to something un-ambiguous (ie finalShadowMapShader / blend FBO with Diffuse)
@@ -115,12 +121,10 @@ public class LightMapRenderer {
 
             finalLightMap = new TextureRegion(finalLightMapTex);
             finalLightMap.flip(false, true);
-
-            cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            cam.setToOrtho(false);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             return false;
         }
 

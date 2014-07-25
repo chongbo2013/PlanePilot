@@ -44,7 +44,7 @@ public class Bullet extends Entity
         _sprite.setPosition(_x, _y);
 
         this.lights = lights;
-        light = new Light(_x, _y, Light.randomColor(), 0.5f, false, true);
+        light = new Light(_x, _y, Light.randomColor(), 0.5f, true, true);
         lights.add(light);
         // lights.removeValue(light, true);
     }

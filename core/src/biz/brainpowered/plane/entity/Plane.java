@@ -205,7 +205,6 @@ public class Plane implements InputProcessor
 
     public void positionPlane()
     {
-
         // ACELLEROMETER CONTROLS
         // TODO: Controls System
         if(Gdx.app.getType() == Application.ApplicationType.iOS || Gdx.app.getType() == Application.ApplicationType.Android)

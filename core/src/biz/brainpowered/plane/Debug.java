@@ -6,7 +6,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
- * Created by sebastian on 2014/07/18.
+ * @author sebastian
+ * @since 2014/07/18
+ * Arranges Text and Values on the Screen for Debugging specific counters/values
+ * Starts Laying Text out From the Top Left Corner
  */
 public class Debug
 {

@@ -1,10 +1,9 @@
 package biz.brainpowered.plane;
-
+import biz.brainpowered.plane.model.Game;
 import biz.brainpowered.plane.factory.BulletFactory;
 import biz.brainpowered.plane.factory.EnemyFactory;
 import biz.brainpowered.plane.factory.ExplosionFactory;
-import biz.brainpowered.plane.model.Light;
-import biz.brainpowered.plane.model.PlaneConfig;
+import biz.brainpowered.plane.model.*;
 import biz.brainpowered.plane.render.BumpRenderer;
 import biz.brainpowered.plane.render.LightMapRenderer;
 import biz.brainpowered.plane.render.ShaderUtil;
@@ -23,11 +22,6 @@ import java.util.ArrayList;
 
 public class Pilot implements ApplicationListener
 {
-    // todo: find a place for this
-    public enum PlayerState {
-        NORMAL
-    };
-
     private Bullet tmpBullet;
     private Enemy tmpEnemy;
 
@@ -36,6 +30,8 @@ public class Pilot implements ApplicationListener
     Plane plane;
     Ground ground;
     ExplosionFactory explosionFactory;
+
+    // TODO: replace ArrayList with shizzles
     ArrayList<Explosion> expCollection = new ArrayList<Explosion>();
     EnemyFactory enemyFactory1;
     EnemyFactory enemyFactory2;
@@ -49,16 +45,15 @@ public class Pilot implements ApplicationListener
 
     // TODO: UI Class
     Texture titleImg; // top be implemented
-    Texture planeNormals; // top be implemented
     Texture planeTex; // top be implemented
 
-    // global config
+    // TODO: global config
     float planeScale = 0.5f;
+    // TODO: all hardcoded values to be moved to global config
 
     // TODO: Game Model
     Integer appWidth;
     Integer appHeight;
-    PlayerState playerState;
     Integer score;
     float lastTimeScore;
 
@@ -66,6 +61,7 @@ public class Pilot implements ApplicationListener
     Sound pigeon;
     Enemy tmp;
     Camera camera;
+    OrthographicCamera cam;
 
     SpriteBatch batch;
     BitmapFont font;
@@ -75,12 +71,18 @@ public class Pilot implements ApplicationListener
     @Override
     public void create ()
     {
+        // Load Global Config
+
+        // Load Asset Manifest
+
+        // Asset Load 'all' Assets // todo: investigate load progress bar
+
         // viewport
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
         camera = new OrthographicCamera(appWidth, appHeight);
         camera.update();
-        batch = new SpriteBatch();
+        batch = new SpriteBatch( 1000, null);
 
         // Explosion Sound
         pigeon = Gdx.audio.newSound(Gdx.files.internal("pigeon.mp3"));
@@ -117,19 +119,23 @@ public class Pilot implements ApplicationListener
         plane.setBulletFactory(bulletFactory);
 
         //light = new Texture("light.png");
-        planeNormals = new Texture(Gdx.files.internal("airplane/PLANE_8_N_NRM.png"));
 
-        playerState = PlayerState.NORMAL; // TODO: Can use real enums too
+        // TODO: Complete Game Class
+        Game.setPlayerState(Game.PlayerState.NORMAL); // TODO: Can use real enums too
 
         // TODO: move Score Models into GameManager
         lastTimeScore = 0.0f;
         score = 0;
-
-        // Shadow Map Setup
-        planeTex = new Texture(Gdx.files.internal("airplane/PLANE_8_N.png"));
+//
+//        // Shadow Map Setup
+//        planeTex = new Texture(Gdx.files.internal("airplane/PLANE_8_N.png"));
 
         // Bump
-        bumpRenderer = new BumpRenderer("shaders/bumpFragment.glsl");
+
+        cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        cam.setToOrtho(false);
+
+        bumpRenderer = new BumpRenderer("shaders/bumpFragment.glsl", cam);
         bumpRenderer.init();
         // End Bump
 
@@ -183,6 +189,9 @@ public class Pilot implements ApplicationListener
         bulletFactory.dispose();
 
         // TODO: dispose renderers
+//        simpleLightsRenderer.dipose();
+//        lightMapRenderer.dipose();
+//        bumpRenderer.dispose();
 
         // todo: re-init/load shaders on 'reinit'
 
@@ -202,7 +211,7 @@ public class Pilot implements ApplicationListener
         // render lights
         lightMapRenderer.renderLights(batch, lights, enemyCollection); // todo: implement complete Occlusion entity collection object
 
-        // render final
+        // BEGIN: render final
         lightMapRenderer.render(batch);
 
         ground.render(batch);
@@ -277,9 +286,10 @@ public class Pilot implements ApplicationListener
         // Batch Rendering Done
         batch.end();
         lightMapRenderer.end();
+        // END: Render Final
 
         // Bump
-        bumpRenderer.render(batch);
+        bumpRenderer.render(batch, lights);
 
         // GC after rendering
         // TODO: Note - ArrayLists are lame (use Array<> instead courtesy of LibGDX)
@@ -327,15 +337,15 @@ public class Pilot implements ApplicationListener
     @Override
     public void resize(final int width, final int height)
     {
-        // bubble up!
-        bumpRenderer.resize(width, height);
+        // resize renderers
         simpleLightsRenderer.resize(width, height);
         lightMapRenderer.resize(width, height, batch);
+        bumpRenderer.resize(width, height);
     }
 
     @Override
     public void pause() {
-        // stop timers, unload shaders
+        // todo: stop timers, unload shaders
     }
 
     @Override

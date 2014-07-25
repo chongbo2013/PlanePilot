@@ -36,7 +36,7 @@ public class Explosion extends Entity {
         float centerOriginY = animation.getKeyFrame(0).getRegionHeight() / 2;
 
         this.lights = lights;
-        light = new Light(_x + centerOriginX, _y + centerOriginY, Light.YELLOW, 1.5f, false, true);
+        light = new Light(_x + centerOriginX, _y + centerOriginY, Light.YELLOW, 1.5f, true, true);
         lights.add(light);
 
         this.animation = animation;
