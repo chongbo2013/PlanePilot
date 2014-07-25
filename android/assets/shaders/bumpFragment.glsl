@@ -29,11 +29,12 @@ void main() {
 
     //RGB of our normal map
     vec3 NormalMap = texture2D(u_normals, vTexCoord0).rgb;
+vec4 trueDiffuse = vec4(0);
 
-    //for(int i=0;i<lightCount;i++){
+    for(int i=0;i<lightCount;i++){
         //The delta position of light
-        vec3 LightDir = vec3(LightPos.xy - (gl_FragCoord.xy / Resolution.xy), LightPos.z);
-        //vec3 LightDir = vec3(LightPoss[i].xy - (gl_FragCoord.xy / Resolution.xy), LightPoss[i].z);
+        //vec3 LightDir = vec3(LightPos.xy - (gl_FragCoord.xy / Resolution.xy), LightPos.z);
+        vec3 LightDir = vec3(LightPoss[i].xy - (gl_FragCoord.xy / Resolution.xy), LightPoss[i].z);
 
         //Correct for aspect ratio
         LightDir.x *= Resolution.x / Resolution.y;
@@ -48,19 +49,25 @@ void main() {
         //Pre-multiply light color with intensity
         //Then perform "N dot L" to determine our diffuse term
         vec3 Diffuse = (LightColor.rgb * LightColor.a) * max(dot(N, L), 0.0);
+        //vec3 Diffuse = vec3(vColor);
 
         //pre-multiply ambient color with intensity
         vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
 
         //calculate attenuation
-        float Attenuation = 1.0 / ( Falloff.x + (Falloff.y*D) + (Falloff.z*D*D) );
+        float Attenuation = 1.0 / ( Falloff.x + (Falloff.y * D) + (Falloff.z * D * D) );
 
         //the calculation which brings it all together
-        vec3 Intensity = Ambient + Diffuse * Attenuation;
+        //vec3 Intensity = Ambient + Diffuse * Attenuation;
+        vec3 Intensity = Diffuse * Attenuation; // drop ambient
         vec3 FinalColor = DiffuseColor.rgb * Intensity;
+
         Sum += FinalColor;
-    //}
+        //trueDiffuse = (vColor * vec4(Sum, DiffuseColor.a)) * vec4((DiffuseColor.rgb * 1.0));// * vec4(Sum, DiffuseColor.a);;
+    }
+    //gl_FragColor = trueDiffuse;
+    Sum += DiffuseColor.rgb * 1.0;
     gl_FragColor = vColor * vec4(Sum, DiffuseColor.a);
-    ////gl_FragColor = vColor * vec4(vec3(0.0, 0.0, 0.0), DiffuseColor.a);
+    //gl_FragColor = vColor * vec4(vec3(0.0, 0.0, 0.0), DiffuseColor.a);
     //gl_FragColor = vColor * vec4(FinalColor, DiffuseColor.a);
 }
