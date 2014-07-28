@@ -7,13 +7,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 /**
  * Created by sebastian on 2014/07/28.
  */
-public class GraphicsComponent implements ComponentInterface {
+public class GenericGraphicsComponent implements GraphicsComponentInterface {
     private Texture _texture;
     private Sprite _sprite;
     private Entity _entity;
 
     // pass in *this and the Texture from the Asset Manager
-    public GraphicsComponent ( Texture texture, Entity entity ) {
+    public GenericGraphicsComponent ( Texture texture, Entity entity ) {
         _texture = texture;
         _sprite = new Sprite(_texture);
         _entity = entity;
@@ -40,8 +40,4 @@ public class GraphicsComponent implements ComponentInterface {
         GraphicsComponentGroup.getInstance().addComponent(this);
     }
 
-//    @Override
-//    public ComponentGroupInterface getGroup() {
-//        return GraphicsComponentGroup.getInstance();
-//    }
 }

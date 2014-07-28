@@ -3,10 +3,11 @@ package biz.brainpowered.plane.comp;
 /**
  * Created by sebastian on 2014/07/28.
  * Generic Tester Object
+ * Also represents a Component Bag currently (this one is very Generic)
  */
 public class Entity {
     // Could compose various Components
-    protected GraphicsComponent _graphics;
+    //protected GraphicsComponent _graphics;
     // Another take could be that the Components Reference an Entity
 
     // Generics

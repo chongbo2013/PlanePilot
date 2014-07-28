@@ -29,20 +29,21 @@ public class ECSDemo implements ApplicationListener {
     SpriteBatch batch;
     int appWidth;
     int appHeight;
-
     EntityManager entityManager;
 
     @Override
     public void create() {
-
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
         camera = new OrthographicCamera(appWidth, appHeight);
         camera.update();
         batch = new SpriteBatch( 1000, null);
-
+        batch.setShader(null); // passthrough
         entityManager = new EntityManager();
-        entityManager.createEntityEntity( null, "airplane/PLANE_8_N.png");
+
+        // todo: will use SceneManagement and Scripting to do basic workflows and scene progression;
+        entityManager.createEntityEntity( null, "airplane/PLANE_8_N.png"); // returns a Reference-value
+        entityManager.createPlayerEntity( null, "airplane/PLANE_8_N.png"); // returns a Reference-value
     }
 
     @Override
@@ -52,16 +53,13 @@ public class ECSDemo implements ApplicationListener {
 
     @Override
     public void render() {
-
-        batch.setShader(null); // passthrough
         Gdx.gl.glClearColor(0f, 0f, 0f, 0f); // clear with white opaque
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();
-
         GraphicsComponentGroup.getInstance().updateGroup(batch);
-        InputComponentGroup.getInstance().updateGroup( null );
-
         batch.end();
+
+        InputComponentGroup.getInstance().updateGroup( null );
     }
 
     @Override

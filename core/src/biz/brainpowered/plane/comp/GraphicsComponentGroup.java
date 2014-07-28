@@ -7,15 +7,15 @@ import com.badlogic.gdx.utils.Array;
  * Created by sebastian on 2014/07/28.
  * GraphicsComponentGroup Singleton
  */
-public class GraphicsComponentGroup implements ComponentGroupInterface {
+public class GraphicsComponentGroup implements GraphicsComponentGroupInterface {
 
-    private static ComponentGroupInterface instance = new GraphicsComponentGroup();
-    private Array<GraphicsComponent> graphicsCollection;
+    private static GraphicsComponentGroupInterface instance = new GraphicsComponentGroup();
+    private Array<GraphicsComponentInterface> graphicsCollection;
     private GraphicsComponentGroup()
     {
-        graphicsCollection = new Array<GraphicsComponent>();
+        graphicsCollection = new Array<GraphicsComponentInterface>();
     }
-    public static ComponentGroupInterface getInstance()
+    public static GraphicsComponentGroupInterface getInstance()
     {
         return instance;
     }
@@ -26,11 +26,12 @@ public class GraphicsComponentGroup implements ComponentGroupInterface {
     }
 
     @Override
-    public void addComponent(ComponentInterface componentInterface) {
+    public void addComponent(GraphicsComponentInterface componentInterface) {
         // add component to fast collection
-        graphicsCollection.add((GraphicsComponent)componentInterface);
+        graphicsCollection.add(componentInterface);
     }
 
+    // Custom
     public void updateGroup ( SpriteBatch batch ) {
         for ( int i =0; i<graphicsCollection.size; i++ ) {
             graphicsCollection.get(i).update(batch);
