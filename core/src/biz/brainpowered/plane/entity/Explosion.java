@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.Array;
  * Time: 2:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Explosion extends Entity {
+public class Explosion extends SpriteEntity {
 
     Animation animation;
 
@@ -29,6 +29,7 @@ public class Explosion extends Entity {
     // pass in Texture Region from Factory
     public Explosion(Animation animation, float xPos, float yPos, Array<Light> lights)
     {
+        super(null);
         _x = xPos;
         _y = yPos;
 

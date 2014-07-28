@@ -25,7 +25,7 @@ import java.util.Vector;
  * Time: 8:31 AM
  * To change this template use File | Settings | File Templates.
  */
-public class Plane implements InputProcessor
+public class Plane extends BumpLitSpriteEntity implements InputProcessor
 {
     private PlaneConfig pc;
     private float appWidth;
@@ -40,7 +40,7 @@ public class Plane implements InputProcessor
     private Sprite leftS;
     private Sprite rightS;
 
-    private Sprite currentSprite;
+    private Sprite _sprite; // todo: substitute this for _sprite ...? or not (go custom)
 
     private Texture propeller1T;
     private Texture propeller2T;
@@ -77,6 +77,9 @@ public class Plane implements InputProcessor
 
     public Plane(PlaneConfig planeConfig, ArrayList<Bullet> bc)
     {
+        // think about this one in more detail
+        super(new Texture(Gdx.files.internal(planeConfig.normalTP)), new Texture(Gdx.files.internal("airplane/PLANE_8_N_NRM.png")), true );
+
         // assignment
         pc = planeConfig;
         scale = pc.scale;
@@ -113,7 +116,7 @@ public class Plane implements InputProcessor
             // instead of scaling the Sprite each time (to global.planeScale), just downscale the texture once here
 
             // also set origin of sprite
-            currentSprite = new Sprite();
+            _sprite = new Sprite();
             leftS = new Sprite(leftT);
             leftS.setSize(scale * leftT.getWidth(), scale * leftT.getHeight());
             leftS.setOrigin(leftS.getWidth() / 2, 0);
@@ -123,8 +126,8 @@ public class Plane implements InputProcessor
             normalS = new Sprite(normalT);
             normalS.setSize(scale * normalT.getWidth(), scale * normalT.getHeight());
 
-            currentSprite.set(normalS);
-            currentSprite.setOrigin(normalS.getWidth() / 2, 0);
+            _sprite.set(normalS);
+            _sprite.setOrigin(normalS.getWidth() / 2, 0);
 
             // some old pasty here - move paths to config
             planeShadowTexture = new Texture(Gdx.files.internal("airplane/PLANE_8_SHADOW.png"));
@@ -224,10 +227,10 @@ public class Plane implements InputProcessor
                 currentMaxAccelY = accelY;
         }
 
-        float maxY = appWidth - currentSprite.getWidth();
+        float maxY = appWidth - _sprite.getWidth();
         float minY = 0;
 
-        float maxX = appHeight - currentSprite.getHeight();
+        float maxX = appHeight - _sprite.getHeight();
         float minX = 0;
 
         float newY = 0;
@@ -237,25 +240,25 @@ public class Plane implements InputProcessor
         // TODO: optimise, Very Inefficent
         if(currentMaxAccelX > baseAcell){
             newX = (float)currentMaxAccelX * 10;
-            currentSprite.setTexture(rightT);
-            //currentSprite.set(rightS);
+            _sprite.setTexture(rightT);
+            //_sprite.set(rightS);
         }
         else if(currentMaxAccelX < -baseAcell){
             newX = (float)currentMaxAccelX * 10;
-            currentSprite.setTexture(leftT);
-            //currentSprite.set(leftS);
+            _sprite.setTexture(leftT);
+            //_sprite.set(leftS);
         }
         else{
             newX = (float)currentMaxAccelX * 10;
-            currentSprite.setTexture(normalT);
-            //currentSprite.set(normalS);
+            _sprite.setTexture(normalT);
+            //_sprite.set(normalS);
         }
 
         newY = 0.0f + (float)currentMaxAccelY *10;
 
         // TODO: center shadow origin
-        float newXshadow = newX+currentSprite.getX();
-        float newYshadow = newY+currentSprite.getY();
+        float newXshadow = newX+_sprite.getX();
+        float newYshadow = newY+_sprite.getY();
 
         newXshadow = Math.min(Math.max(newXshadow, minY + 15), maxY + 15) / 1.3f;
         newYshadow = Math.min(Math.max(newYshadow, minX - 15), maxX - 15) / 1.3f;
@@ -266,21 +269,21 @@ public class Plane implements InputProcessor
         //newXpropeller = Math.min(Math.max((subjectSprite.getWidth()/2),minY),maxY);
         //newYpropeller = Math.min(Math.max(newYpropeller,minX+(subjectSprite.getHeight())-15),maxX+(subjectSprite.getHeight()/2)-5);
 
-        newX = Math.min(Math.max(newX + currentSprite.getX(), minY), maxY);
-        newY = Math.min(Math.max(newY + currentSprite.getY(), minX), maxX);
+        newX = Math.min(Math.max(newX + _sprite.getX(), minY), maxY);
+        newY = Math.min(Math.max(newY + _sprite.getY(), minX), maxX);
 
-        newXpropeller = newX + (currentSprite.getWidth()/2) - (propeller.getWidth()/2);
-        newYpropeller = newY + (currentSprite.getHeight())-(15*scale);
+        newXpropeller = newX + (_sprite.getWidth()/2) - (propeller.getWidth()/2);
+        newYpropeller = newY + (_sprite.getHeight())-(15*scale);
 
-        //currentSprite.setPosition(Math.round(newX), Math.round(newY));
-        //currentSprite.translateX(Math.round(newX), Math.round(newY));
+        //_sprite.setPosition(Math.round(newX), Math.round(newY));
+        //_sprite.translateX(Math.round(newX), Math.round(newY));
         planeShadow.setPosition(newXshadow, newYshadow);
         propeller.setPosition(newXpropeller, newYpropeller);
 
-        currentSprite.setX(Math.round(newX));
+        _sprite.setX(Math.round(newX));
 
         //System.out.println("newX: "+newX);
-        currentSprite.setY(Math.round(newY));
+        _sprite.setY(Math.round(newY));
     }
 
     public void dispose(){
@@ -293,7 +296,11 @@ public class Plane implements InputProcessor
         positionPlane();
 
         planeShadow.draw(batch);
-        currentSprite.draw(batch);
+        _normalMap.bind(1);
+        //bind diffuse color to texture unit 0
+        //important that we specify 0 otherwise we'll still be bound to glActiveTexture(GL_TEXTURE1)
+        _texture.bind(0);
+        _sprite.draw(batch);
         propeller.draw(batch);
     }
 
@@ -301,7 +308,7 @@ public class Plane implements InputProcessor
     // Utility functions (to be refactored)
     public Rectangle getBoundingBox()
     {
-        return currentSprite.getBoundingRectangle();
+        return _sprite.getBoundingRectangle();
     }
 
     public void setBulletFactory(BulletFactory bf)
@@ -311,8 +318,8 @@ public class Plane implements InputProcessor
 
     public void fireBullet()
     {
-        float bulletX = currentSprite.getX() + (currentSprite.getWidth() / 2);
-        float bulletY = currentSprite.getY() + (currentSprite.getHeight());
+        float bulletX = _sprite.getX() + (_sprite.getWidth() / 2);
+        float bulletY = _sprite.getY() + (_sprite.getHeight());
         bulletCollection.add(bulletFactory.create(bulletX, bulletY, 90f, 1000f));
         //bulletCollectionSize++;
     }

@@ -1,5 +1,6 @@
 package biz.brainpowered.plane.render;
 
+import biz.brainpowered.plane.entity.BumpLitSpriteEntity;
 import biz.brainpowered.plane.model.Light;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
@@ -26,7 +27,7 @@ import static biz.brainpowered.plane.render.ShaderUtil.createShader;
 public class BumpRenderer {
 
     //our constants...
-    public static final float DEFAULT_LIGHT_Z = 0.025f;
+    public static final float DEFAULT_LIGHT_Z = 0.0125f;
     public static final float AMBIENT_INTENSITY = 1.0f;
     public static final float LIGHT_INTENSITY = 0.5f;
 
@@ -53,10 +54,7 @@ public class BumpRenderer {
 
     Light tmpLight;
 
-
-    //SpriteBatch batch;
-    //OrthographicCamera cam;// = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-    //cam.setToOrtho(false);
+    BumpLitSpriteEntity blse;
 
     public BumpRenderer(String path, OrthographicCamera cam)
     {
@@ -69,7 +67,6 @@ public class BumpRenderer {
     public boolean init () {
         try
         {
-
             planeNormals = new Texture(Gdx.files.internal("airplane/PLANE_8_N_NRM.png"));
 
             fragmentShaderString = Gdx.files.internal(fragmentShaderPath).readString();
@@ -87,29 +84,15 @@ public class BumpRenderer {
             shaderProgram.setUniformf("AmbientColor", AMBIENT_COLOR.x, AMBIENT_COLOR.y, AMBIENT_COLOR.z, AMBIENT_INTENSITY);
             shaderProgram.setUniformf("Falloff", FALLOFF);
 
-
             //LibGDX likes us to end the shader program
             shaderProgram.end();
 
-//            batch = new SpriteBatch(1000, shaderProgram);
-//            batch.setShader(shaderProgram);
-
-//            cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-//            cam.setToOrtho(false);
-
-            //handle mouse wheel
-//            Gdx.input.setInputProcessor(new InputAdapter() {
-//                public boolean scrolled(int delta) {
-//                    //LibGDX mouse wheel is inverted compared to lwjgl-basics
-//                    LIGHT_POS.z = Math.max(0f, LIGHT_POS.z - (delta * 0.005f));
-//                    System.out.println("New light Z: "+LIGHT_POS.z);
-//                    return true;
-//                }
-//            });
-
-
             // Shadow Map Setup
             planeTex = new Texture(Gdx.files.internal("airplane/PLANE_8_N.png"));
+
+            // DEMO Code:
+            blse = new BumpLitSpriteEntity(planeTex, planeNormals, true);
+
         }
         catch (Exception e)
         {
@@ -121,32 +104,11 @@ public class BumpRenderer {
     }
 
     // TODO: what this needs is: the lights data - the iteratable items with normal maps -? this should all be passed back to an FBO and blended downstream
-    public void render ( SpriteBatch batch, Array<Light> lights ) {
+    public void render ( SpriteBatch batch, Array<Light> lights, BumpLitSpriteEntity blse ) {
 
         //BUMP
-        //update light position, normalized to screen resolution
-
-        //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        //Gdx.gl.glClearColor(0.25f,0.25f,0.25f,1f);
-
-//        //reset light Z
-//        if (Gdx.input.isTouched()) {
-//            LIGHT_POS.z = DEFAULT_LIGHT_Z;
-//            System.out.println("New light Z: "+LIGHT_POS.z);
-//        }
-
-        //shader will now be in use...
-//System.out.println("zangle: "+(((zAngle * appWidth )/ appWidth) * 40));
-//System.out.println("zangle: "+(100.00f + (25.0f * (float)Math.sin(zAngle)) + 25.0f* MathUtils.random()));
-        //update light position, normalized to screen resolution
-//        float gx = plane.currentSprite.getX();
-//        float gy = plane.currentSprite.getY();
-
-//        LIGHT_POS.x = gx;
-//        LIGHT_POS.y = gy;
-//
-        //float[] numbers = new float[]();
+        // TODO: Lots of Space for Optimisation
+        // Construct Array of Vector3 Floats to pass into GLSL Program
         float[] myIntArray = new float[(lights.size +1) * 3];
         int ex = 0;
         int bumpLights = 0;
@@ -165,82 +127,39 @@ public class BumpRenderer {
             }
         }
 
-//        myIntArray[ex] = 0.5f ;
-//        ex++;
-//        myIntArray[ex] = 0.5f;
-//        ex++;
-//        myIntArray[ex] = DEFAULT_LIGHT_Z;
-//        ex++;
-
         shaderProgram.begin();
-//
-//        //send a Vector4f to GLSL
         shaderProgram.setUniformi("lightCount", bumpLights );
-//        shaderProgram.setUniformf("LightPos", LIGHT_POS);
-//        //bumpRenderer.setUniform3fv("LightPoss", myIntArray, 0, 1);
-        shaderProgram.setUniform3fv("LightPoss", myIntArray, 0, ex);
-
+        shaderProgram.setUniform3fv("LightsPos", myIntArray, 0, ex);
         shaderProgram.end();
-//       // bumpRenderer.setUniform3fv("LightPoss", new float[] {gx, gy, DEFAULT_LIGHT_Z}, 0, 1);
-//
-//        batch.setShader(shaderProgram);
-//        batch.begin();
+
+        //reset light Z
+//        if (Gdx.input.isTouched()) {
+//            LIGHT_POS.z = DEFAULT_LIGHT_Z;
+//            System.out.println("New light Z: "+LIGHT_POS.z);
+//        }
+        batch.setShader(shaderProgram);
+        batch.begin();
+
+        //shader will now be in use...
 //        //bind normal map to texture unit 1
-//        // or render normals to texture, then bind
 //        planeNormals.bind(1);
 //
 //        //bind diffuse color to texture unit 0
 //        //important that we specify 0 otherwise we'll still be bound to glActiveTexture(GL_TEXTURE1)
 //        planeTex.bind(0);
-//
-//        //draw the texture unit 0 with our shader effect applied
-//        batch.draw(planeTex, 50, 50);
-//        //batch.draw(planeTex, gx, gy);
-//
-//        batch.end();
-        // END BUMP
-        //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        //Gdx.gl.glClearColor(0.25f,0.25f,0.25f,1f);
 
-        //reset light Z
-        if (Gdx.input.isTouched()) {
-            LIGHT_POS.z = DEFAULT_LIGHT_Z;
-            System.out.println("New light Z: "+LIGHT_POS.z);
-        }
-        batch.setShader(shaderProgram);
-        batch.begin();
-
-        //shader will now be in use...
-
-        //update light position, normalized to screen resolution
-        float x = Mouse.getX() / (float)Display.getWidth();
-        float y = Mouse.getY() / (float)Display.getHeight();
-
-        LIGHT_POS.x = x;
-        LIGHT_POS.y = y;
-
-        //send a Vector4f to GLSL
-        shaderProgram.setUniformf("LightPos", LIGHT_POS);
-
-        //bind normal map to texture unit 1
-        planeNormals.bind(1);
-
-        //bind diffuse color to texture unit 0
-        //important that we specify 0 otherwise we'll still be bound to glActiveTexture(GL_TEXTURE1)
-        planeTex.bind(0);
+        // TODO: Entity System to Kick in soon... stay tuned
+        // Note: the BumpLitSpriteEntity knows how to assign textures to the Texture Units for the Shader to Operate
+        blse.render(batch);
 
         //draw the texture unit 0 with our shader effect applied
-        batch.draw(planeTex, Display.getWidth()/2, Display.getHeight()/2);
+        //batch.draw(planeTex, Display.getWidth()/2, Display.getHeight()/2);
 
         batch.end();
     }
 
     public void resize (int width, int height)
     {
-
-//        cam.setToOrtho(false, width, height);
-//        batch.setProjectionMatrix(cam.combined);
-
         shaderProgram.begin();
         shaderProgram.setUniformf("Resolution", width, height);
         shaderProgram.end();

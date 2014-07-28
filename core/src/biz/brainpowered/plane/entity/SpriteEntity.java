@@ -1,22 +1,26 @@
 package biz.brainpowered.plane.entity;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
  * Created by sebastian on 2014/07/24.
- * Entity implies renderable graphics item;
- * @todo implement Component Entity System...
+ * SpriteEntity implies renderable graphics item;
+ * @todo implement Component SpriteEntity System...
  */
-public class Entity {
+public class SpriteEntity { // todo: re-define as SpriteEntity
     protected boolean _dispose;
     protected Sprite _sprite;
+    protected Texture _texture;
     protected float _x;
     protected float _y;
 
-    public Entity () {
+    public SpriteEntity(Texture texture) {
         _dispose = false;
-        _sprite = null;
+        _texture = texture;
+        if (_texture != null)
+            _sprite = new Sprite( _texture );
     }
 
     public void setDispose ( boolean dispose ) {

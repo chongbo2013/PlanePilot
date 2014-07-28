@@ -214,6 +214,7 @@ public class Pilot implements ApplicationListener
         // BEGIN: render final
         lightMapRenderer.render(batch);
 
+        ground.update(dt, 1.0f);
         ground.render(batch);
         //timeScore(); // todo scoring in game model
 
@@ -227,9 +228,10 @@ public class Pilot implements ApplicationListener
         debug.reset();
         // END Debug
 
-        plane.render(batch);
+        //bumpRenderer.render(batch, lights, plane);
+        //plane.render(batch);
 
-        // TODO: Entity Component System will check all Entities for type Renderable (and then do it in the loop)
+        // TODO: SpriteEntity Component System will check all Entities for type Renderable (and then do it in the loop)
         // Render Bullets
         for (int y = 0; y<bulletCollection.size(); y++) {
             tmpBullet = bulletCollection.get(y);
@@ -289,7 +291,8 @@ public class Pilot implements ApplicationListener
         // END: Render Final
 
         // Bump
-        bumpRenderer.render(batch, lights);
+        //
+        bumpRenderer.render(batch, lights, plane);
 
         // GC after rendering
         // TODO: Note - ArrayLists are lame (use Array<> instead courtesy of LibGDX)

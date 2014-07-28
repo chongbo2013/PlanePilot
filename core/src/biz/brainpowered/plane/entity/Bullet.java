@@ -3,7 +3,6 @@ package biz.brainpowered.plane.entity;
 import biz.brainpowered.plane.model.Light;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
@@ -15,7 +14,7 @@ import com.badlogic.gdx.utils.Array;
  * Time: 2:03 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Bullet extends Entity
+public class Bullet extends SpriteEntity
 {
 //    public float _x;
 //    public float _y;
@@ -30,8 +29,8 @@ public class Bullet extends Entity
 
     public Bullet(Texture texture, float scale, float xPos, float yPos, float angle, float velocity, Array<Light>lights)
     {
-        super();
-        _sprite = new Sprite(texture);
+        super(texture);
+        //_sprite = new Sprite(texture);
         _sprite.scale(scale);
         _sprite.setOriginCenter();
 
@@ -44,7 +43,7 @@ public class Bullet extends Entity
         _sprite.setPosition(_x, _y);
 
         this.lights = lights;
-        light = new Light(_x, _y, Light.randomColor(), 0.5f, true, true);
+        light = new Light(_x + _sprite.getWidth()/2, _y + _sprite.getHeight()/2, Light.randomColor(), 0.5f, true, true);
         lights.add(light);
         // lights.removeValue(light, true);
     }
@@ -67,8 +66,8 @@ public class Bullet extends Entity
         _sprite.setPosition(_x, _y);
         _sprite.draw(batch);
 
-        light.x = _x;
-        light.y = _y;
+        light.x = _x + _sprite.getWidth()/2;
+        light.y = _y + _sprite.getHeight()/2;
     }
 
     // collision detection

@@ -5,7 +5,6 @@ package biz.brainpowered.plane.entity;
 import biz.brainpowered.util.Util;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.Rectangle;
@@ -18,7 +17,7 @@ import com.badlogic.gdx.math.Vector2;
  * Time: 11:21 AM
  * To change this template use File | Settings | File Templates.
  */
-public class Enemy extends Entity
+public class Enemy extends SpriteEntity // todo: rename to SpriteEntity
 {
     float speed = 0.15f;
     float current = 0;
@@ -27,16 +26,12 @@ public class Enemy extends Entity
     Vector2[] dataSet = new Vector2[4];
     CatmullRomSpline<Vector2> myCatmull;
 
-//    public float _x;
-//    public float _y;
-
-
     // TODO: abstract the THIS/Sprite positon and dimensions
     public Enemy(Texture texture, float scale, int xPos, int yPos)
     {
-        super();
+        super(texture);
 
-        _sprite = new Sprite(texture);
+        //_sprite = new Sprite(texture);
         _sprite.setSize(scale*texture.getWidth(), scale*texture.getHeight());
         _sprite.setOrigin(_sprite.getWidth()/2, _sprite.getHeight()/2);
         _sprite.setPosition(xPos, yPos);

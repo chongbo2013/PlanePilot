@@ -38,6 +38,9 @@ public class BulletFactory extends EntityFactory
 
     public Bullet create (float xPos, float yPos, float angle, float velocity)
     {
+        // need to center the entity by its texture dimensions offset back
+        xPos = xPos - (texture.getWidth()/2);
+        yPos = yPos - (texture.getHeight()/2);
         return new Bullet(texture, scale, xPos, yPos, angle, velocity, lights);
     }
 

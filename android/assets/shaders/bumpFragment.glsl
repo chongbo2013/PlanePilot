@@ -7,20 +7,20 @@ uniform sampler2D u_texture;   //diffuse map
 uniform sampler2D u_normals;   //normal map
 
 uniform int lightCount;         //number of lights (constant)
+
 //values used for shading algorithm...
 uniform vec2 Resolution;      //resolution of screen
-uniform vec3 LightPos;        //light position, normalized
-uniform vec3 LightPoss[32];   // how does the Passed in float array get converted to a Vec3?
+uniform vec3 LightsPos[32];   // Max of 32 Lights - TODO: add max to §global config
 uniform vec4 LightColor;      //light RGBA -- alpha is intensity
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
 uniform vec3 Falloff;         //attenuation coefficients
-//uniform int lightCount;         //number of lights (constant)
 
-//const int maxLights = 32;
-
-// TODO: we need to supporte vec3 arrays to push multiple light sources into here
 void main() {
+
+    // todo: Abide by Max Lights
+    // Hard Code Max - for Now, Until We integrate this GLSL Program one into a SpriteBatcher
     const int maxLights = 32;
+
     // Store our Sum of lights on the Render
     vec3 Sum = vec3(0.0, 0.0, 0.0);
 
@@ -29,12 +29,11 @@ void main() {
 
     //RGB of our normal map
     vec3 NormalMap = texture2D(u_normals, vTexCoord0).rgb;
-vec4 trueDiffuse = vec4(0);
 
-    for(int i=0;i<lightCount;i++){
+    for (int i=0; i<lightCount; i++) {
+
         //The delta position of light
-        //vec3 LightDir = vec3(LightPos.xy - (gl_FragCoord.xy / Resolution.xy), LightPos.z);
-        vec3 LightDir = vec3(LightPoss[i].xy - (gl_FragCoord.xy / Resolution.xy), LightPoss[i].z);
+        vec3 LightDir = vec3(LightsPos[i].xy - (gl_FragCoord.xy / Resolution.xy), LightsPos[i].z);
 
         //Correct for aspect ratio
         LightDir.x *= Resolution.x / Resolution.y;
@@ -58,16 +57,13 @@ vec4 trueDiffuse = vec4(0);
         float Attenuation = 1.0 / ( Falloff.x + (Falloff.y * D) + (Falloff.z * D * D) );
 
         //the calculation which brings it all together
-        //vec3 Intensity = Ambient + Diffuse * Attenuation;
         vec3 Intensity = Diffuse * Attenuation; // drop ambient
         vec3 FinalColor = DiffuseColor.rgb * Intensity;
 
         Sum += FinalColor;
-        //trueDiffuse = (vColor * vec4(Sum, DiffuseColor.a)) * vec4((DiffuseColor.rgb * 1.0));// * vec4(Sum, DiffuseColor.a);;
     }
-    //gl_FragColor = trueDiffuse;
+
+    // With or Without Lights, the Ambient Color will be consistent
     Sum += DiffuseColor.rgb * 1.0;
     gl_FragColor = vColor * vec4(Sum, DiffuseColor.a);
-    //gl_FragColor = vColor * vec4(vec3(0.0, 0.0, 0.0), DiffuseColor.a);
-    //gl_FragColor = vColor * vec4(FinalColor, DiffuseColor.a);
 }
