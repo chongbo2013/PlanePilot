@@ -3,6 +3,7 @@
     {
         "scenes": "/scenes",
         "shaders": "/shaders",
+        "sound": "/sound",
 
     },
     "scenes":
