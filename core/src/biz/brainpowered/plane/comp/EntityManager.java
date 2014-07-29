@@ -1,6 +1,7 @@
 package biz.brainpowered.plane.comp;
 
-import biz.brainpowered.plane.entity.Plane;
+import biz.brainpowered.plane.comp.entities.BaseEntity;
+import biz.brainpowered.plane.comp.entities.SpriteEntity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 
@@ -13,19 +14,19 @@ public class EntityManager {
     }
 
     // do the test
-    public Entity createEntityEntity ( Object... params ) {
+    public BaseEntity createEntityEntity ( Object... params ) {
 
         // todo: make a one line here :P
-        Entity entity = new Entity ( params ); // get reference to entity - then pass it into the Components
+        BaseEntity entity = new BaseEntity ( params ); // get reference to entity - then pass it into the Components
         entity.addComponent(new GenericGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity)); // todo: add AssetManager
         entity.addComponent(new GenericInputComponent(entity));
         return entity;
     }
 
     // does not exist yet
-    public Entity createPlayerEntity ( Object... params ) {
+    public BaseEntity createPlayerEntity ( Object... params ) {
         //Plane plane = new Plane( params );
-        Entity entity = new Entity ( params ); // get reference to entity - then pass it into the Components
+        BaseEntity entity = new BaseEntity ( params ); // get reference to entity - then pass it into the Components
         // can poke around with entity here
         entity.addComponent(new PlayerGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity)); // todo: add AssetManager
         entity.addComponent(new GenericInputComponent(entity));

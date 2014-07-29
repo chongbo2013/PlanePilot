@@ -1,7 +1,10 @@
 package biz.brainpowered.plane.comp;
 
+import biz.brainpowered.plane.comp.interfaces.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
+
+import java.util.HashMap;
 
 /**
  * Created by sebastian on 2014/07/28.
@@ -10,10 +13,10 @@ import com.badlogic.gdx.utils.Array;
 public class GraphicsComponentGroup implements GraphicsComponentGroupInterface {
 
     private static GraphicsComponentGroupInterface instance = new GraphicsComponentGroup();
-    private Array<GraphicsComponentInterface> graphicsCollection;
+    private Array<GraphicsComponentInterface> components;
     private GraphicsComponentGroup()
     {
-        graphicsCollection = new Array<GraphicsComponentInterface>();
+        init();
     }
     public static GraphicsComponentGroupInterface getInstance()
     {
@@ -21,20 +24,33 @@ public class GraphicsComponentGroup implements GraphicsComponentGroupInterface {
     }
 
     @Override
-    public void init() {
+    public boolean init() {
+        try
+        {
+            components = new Array<GraphicsComponentInterface>();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
 
+        return true;
     }
 
     @Override
+    public void addComponent(ComponentInterface component) {
+        components.add((GraphicsComponentInterface)component);
+    }
+
     public void addComponent(GraphicsComponentInterface componentInterface) {
         // add component to fast collection
-        graphicsCollection.add(componentInterface);
     }
 
     // Custom
     public void updateGroup ( SpriteBatch batch ) {
-        for ( int i =0; i<graphicsCollection.size; i++ ) {
-            graphicsCollection.get(i).update(batch);
+        for ( int i =0; i<components.size; i++ ) {
+            components.get(i).update(batch);
         }
     }
 }

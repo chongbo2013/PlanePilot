@@ -1,14 +1,9 @@
-package biz.brainpowered.plane.comp;
-
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+package biz.brainpowered.plane.comp.interfaces;
 
 /**
  * Created by sebastian on 2014/07/28.
  */
-public interface InputComponentGroupInterface {
-
-    // initialise this type of Component Group
-    public void init();
+public interface InputComponentGroupInterface extends ComponentGroupInterface{
 
     // add component instance (which has reference to the 'owning' Entity)
     public void addComponent(ComponentInterface componentInterface);

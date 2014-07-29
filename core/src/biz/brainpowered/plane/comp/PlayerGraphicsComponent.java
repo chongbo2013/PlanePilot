@@ -1,5 +1,6 @@
 package biz.brainpowered.plane.comp;
 
+import biz.brainpowered.plane.comp.interfaces.EntityInterface;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -16,7 +17,7 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
     Sprite rightSprite;
 
     // pass a complete parameter list in here, thanks
-    public PlayerGraphicsComponent(Texture texture, Entity entity) {
+    public PlayerGraphicsComponent(Texture texture, EntityInterface entity) {
         super(texture, entity);
 
         // more assignments..

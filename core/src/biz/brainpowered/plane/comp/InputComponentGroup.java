@@ -1,6 +1,6 @@
 package biz.brainpowered.plane.comp;
 
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import biz.brainpowered.plane.comp.interfaces.*;
 import com.badlogic.gdx.utils.Array;
 
 /**
@@ -13,19 +13,27 @@ public class InputComponentGroup implements InputComponentGroupInterface {
     private Array<InputComponentInterface> components;
     private InputComponentGroup()
     {
-        components = new Array<InputComponentInterface>();
+        init();
     }
     public static InputComponentGroupInterface getInstance()
     {
         return instance;
     }
 
-    /**
-     * Future Proofing
-     */
-    @Override
-    public void init() {
 
+    @Override
+    public boolean init() {
+        try
+        {
+            components = new Array<InputComponentInterface>();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -34,7 +42,6 @@ public class InputComponentGroup implements InputComponentGroupInterface {
      */
     @Override
     public void addComponent(ComponentInterface componentInterface) {
-        // add component to fast collection
         components.add((InputComponentInterface) componentInterface);
     }
 

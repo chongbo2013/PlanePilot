@@ -1,5 +1,6 @@
 package biz.brainpowered.plane.desktop;
 
+import biz.brainpowered.plane.comp.ComponentGroupManager;
 import biz.brainpowered.plane.comp.EntityManager;
 import biz.brainpowered.plane.comp.GraphicsComponentGroup;
 import biz.brainpowered.plane.comp.InputComponentGroup;
@@ -40,6 +41,10 @@ public class ECSDemo implements ApplicationListener {
         batch = new SpriteBatch( 1000, null);
         batch.setShader(null); // passthrough
         entityManager = new EntityManager();
+
+        // Register Component Groups
+        ComponentGroupManager.getInstance().registerComponentGroup(ComponentGroupManager.GRAPHICS, GraphicsComponentGroup.getInstance());
+        ComponentGroupManager.getInstance().registerComponentGroup(ComponentGroupManager.INPUT, InputComponentGroup.getInstance());
 
         // todo: will use SceneManagement and Scripting to do basic workflows and scene progression;
         entityManager.createEntityEntity( null, "airplane/PLANE_8_N.png"); // returns a Reference-value

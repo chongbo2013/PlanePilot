@@ -1,0 +1,44 @@
+{
+    "id" : "splash",
+    "assetList": [
+        "pigeon.mp3",
+        "airplane/PLANE_8_N.png",
+        "airplane/PLANE_8_L.png",
+        "airplane/PLANE_8_R.png",
+        "airplane/airPlanesBackground.png",
+        "explosion19.png",
+        "shaders/pixelShader.glsl",
+        "shaders/shadow/shadowMap.glsl",
+        "shaders/shadow/shadowRender.glsl",
+        "airplane/PLANE_1_N.png",
+        "airplane/PLANE_2_N.png",
+        "airplane/B_2.png",
+        "shaders/bumpFragment.glsl",
+        "light.png"
+    ],
+    "scripts": [
+        {
+            "id": "default",
+            "data": [
+                {
+                    "command": "createEntity",
+                    "entityRef": "Entity1",
+                    "delay": 2500,
+                    "params": [
+                        200,
+                        200
+                    ]
+                },
+                {
+                    "command": "moveLinear",
+                    "entityRef": "Entity1",
+                    "delay": 2500,
+                    "params": [
+                        500,
+                        500
+                    ]
+                }
+            ]
+        }
+    ]
+}

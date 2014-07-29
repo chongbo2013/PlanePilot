@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
- * Created by sebastian on 2014/07/24.
+ * @deprecated a basic sprite entity
  */
 public interface EntityInterface {
 

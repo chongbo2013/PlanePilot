@@ -1,17 +1,18 @@
 package biz.brainpowered.plane.comp;
 
+import biz.brainpowered.plane.comp.interfaces.EntityInterface;
+import biz.brainpowered.plane.comp.interfaces.InputComponentInterface;
+import biz.brainpowered.plane.comp.interfaces.SpriteEntityInterface;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 
 /**
  * Created by sebastian on 2014/07/28.
  */
-public class GenericInputComponent implements InputComponentInterface {
-    private Entity _entity;
+public class GenericInputComponent extends BaseComponent implements InputComponentInterface {
 
-    public GenericInputComponent ( Entity entity ) {
-        _entity = entity;
+    public GenericInputComponent ( EntityInterface entity ) {
+        super(ComponentGroupManager.INPUT, entity);
 
         // todo: inject custom callbacks into InputComponents
         Gdx.input.setInputProcessor(new InputAdapter() {
@@ -19,8 +20,17 @@ public class GenericInputComponent implements InputComponentInterface {
             public boolean touchDown(int x, int y, int pointer, int button) {
                 float mx = x;
                 float my = Gdx.graphics.getHeight() - y;
-                _entity._x = mx;
-                _entity._y = my;
+
+                /**
+                 * Larger Consideration:
+                 * Could implement "Spacial" Component that wraps x,y,z,velocity, angle, scale, etc
+                 * then simply, example: ((SpacialComponent)_entity.getComponent("Spacial")).getY()/.setX(x)
+                 * Considerations in this are, Performance trade-off vs Flexibility (consistency)
+                 * and then finally alternative Fast mapping techniques acheiving the same outcome
+                 */
+
+                _entity.setX(mx);
+                _entity.setY(my);
                 return true;
             }
 
@@ -30,10 +40,5 @@ public class GenericInputComponent implements InputComponentInterface {
     public void update( Object... params ) {
         // detect input and update velocity on entity
         // input detection and setting Entity properties
-    }
-
-    @Override
-    public void registerComponent() {
-        InputComponentGroup.getInstance().addComponent(this);
     }
 }

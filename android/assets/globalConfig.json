@@ -1,0 +1,13 @@
+{
+    "path":
+    {
+        "scenes": "/scenes",
+        "shaders": "/shaders",
+
+    },
+    "scenes":
+    [
+        "splash",
+        "game"
+    ]
+}

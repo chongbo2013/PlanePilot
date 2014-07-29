@@ -1,4 +1,4 @@
-package biz.brainpowered.plane.comp;
+package biz.brainpowered.plane.comp.interfaces;
 
 /**
  * Created by sebastian on 2014/07/28.
