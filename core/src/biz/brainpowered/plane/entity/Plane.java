@@ -46,6 +46,9 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
     private Texture propeller2T;
     private Texture bulletT;
     private Texture smokeT;
+
+
+
     private Sound shootS;
     private Sound diveS;
 
@@ -71,9 +74,10 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
     float highestAccelY;
 
     // Passed in
+    // TODO: create BulletEntity
     BulletFactory bulletFactory;
     ArrayList<Bullet> bulletCollection;
-
+    Sound fire;
 
     public Plane(PlaneConfig planeConfig, ArrayList<Bullet> bc)
     {
@@ -147,6 +151,7 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
 
             // control management
             directionKeyReleased = true;
+            fire = Gdx.audio.newSound(Gdx.files.internal("sound/219622__ani-music__little-zap-zaps-1a.wav"));
         }
         catch (Exception e)
         {
@@ -321,6 +326,7 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
         float bulletX = _sprite.getX() + (_sprite.getWidth() / 2);
         float bulletY = _sprite.getY() + (_sprite.getHeight());
         bulletCollection.add(bulletFactory.create(bulletX, bulletY, 90f, 1000f));
+        fire.play();
         //bulletCollectionSize++;
     }
 

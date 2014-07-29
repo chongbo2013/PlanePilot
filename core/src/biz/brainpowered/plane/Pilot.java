@@ -11,6 +11,7 @@ import biz.brainpowered.plane.render.SimpleLightsRenderer;
 import biz.brainpowered.util.Util;
 import biz.brainpowered.plane.entity.*;
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -58,7 +59,9 @@ public class Pilot implements ApplicationListener
     float lastTimeScore;
 
     // SOUNDS:
-    Sound pigeon;
+    Sound explode;
+    Music cruise;
+
     Enemy tmp;
     Camera camera;
     OrthographicCamera cam;
@@ -85,7 +88,8 @@ public class Pilot implements ApplicationListener
         batch = new SpriteBatch( 1000, null);
 
         // Explosion Sound
-        pigeon = Gdx.audio.newSound(Gdx.files.internal("pigeon.mp3"));
+        explode = Gdx.audio.newSound(Gdx.files.internal("sound/95951__tmokonen__lazer.wav"));
+        cruise = Gdx.audio.newMusic(Gdx.files.internal("sound/41143__digifishmusic__cruising-20013-feet.wav"));
 
         // Refactored Classes Init Here
         debug = new Debug();
@@ -118,34 +122,28 @@ public class Pilot implements ApplicationListener
         bulletFactory.init();
         plane.setBulletFactory(bulletFactory);
 
-        //light = new Texture("light.png");
-
         // TODO: Complete Game Class
         Game.setPlayerState(Game.PlayerState.NORMAL); // TODO: Can use real enums too
 
         // TODO: move Score Models into GameManager
         lastTimeScore = 0.0f;
         score = 0;
-//
-//        // Shadow Map Setup
-//        planeTex = new Texture(Gdx.files.internal("airplane/PLANE_8_N.png"));
-
-        // Bump
 
         cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         cam.setToOrtho(false);
 
         bumpRenderer = new BumpRenderer("shaders/bumpFragment.glsl", cam);
         bumpRenderer.init();
-        // End Bump
 
-        // Simple Lights
         simpleLightsRenderer = new SimpleLightsRenderer("light.png", lights);
         simpleLightsRenderer.init();
 
         font = new BitmapFont();
 
         scheduleEnemies();
+
+        cruise.setLooping(true);
+        cruise.play();
     }
 
     private void scheduleEnemies(){
@@ -164,8 +162,6 @@ public class Pilot implements ApplicationListener
         //System.out.println("GoOrNot: "+GoOrNot);
         if(GoOrNot == 1){
             Enemy enemy;
-
-            //int randomEnemy = Util.getRandomNumberBetween(0, 1);
             double rand = Math.random();
             if(rand < 0.5f)
                 enemy = enemyFactory1.create(appWidth/2, appHeight/2);
@@ -197,7 +193,6 @@ public class Pilot implements ApplicationListener
 
         // pre-refactor
         batch.dispose();
-        titleImg.dispose();
     }
 
     @Override
@@ -258,14 +253,14 @@ public class Pilot implements ApplicationListener
                 if(tmpEnemy.checkOverlap(tmpBullet.getRectangle()))
                 {
                     // sound
-                    pigeon.play();
+                    //pigeon.play();
                     tmpEnemy.setDispose(true);
                     tmpBullet.setDispose(true);
                     //tmp = enemyCollection.get(x);
 
                     expCollection.add(explosionFactory.create((tmpEnemy.getX() + (tmpEnemy.getSprite().getWidth()/2) - 50), tmpEnemy.getY() + (tmpEnemy.getSprite().getHeight()/2) - 50));
                     //expCollectionSize++;
-
+                    explode.play();
                     // TODO: Score Manager
                     score += 250000;
                 }
@@ -322,6 +317,7 @@ public class Pilot implements ApplicationListener
         }
 
         // A little Hack with arrays (kind of forcing the GC here)
+        // TODO: potentially avoid this...
         Util.cleanNulls(enemyCollection);
         Util.cleanNulls(expCollection);
         Util.cleanNulls(bulletCollection);
@@ -340,7 +336,6 @@ public class Pilot implements ApplicationListener
     @Override
     public void resize(final int width, final int height)
     {
-        // resize renderers
         simpleLightsRenderer.resize(width, height);
         lightMapRenderer.resize(width, height, batch);
         bumpRenderer.resize(width, height);

@@ -36,7 +36,7 @@ public class BaseEntity implements EntityInterface {
 //        _x = 100;
 //        _y = 100;
         // not much
-        
+
         // for now
         init();
     }

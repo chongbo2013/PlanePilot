@@ -11,8 +11,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  * Created by sebastian on 2014/07/28.
  */
 public class GenericGraphicsComponent extends BaseComponent implements GraphicsComponentInterface {
-    private Texture _texture;
-    private Sprite _sprite;
+    Texture _texture;
+    Sprite _sprite;
     //private SpriteEntityInterface _entity; // TODO: rather implement 'spacial' Component for entity
 
     // pass in *this and the Texture from the Asset Manager
