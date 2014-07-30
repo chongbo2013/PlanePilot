@@ -7,33 +7,49 @@ import biz.brainpowered.plane.comp.entities.SpriteEntity;
 import biz.brainpowered.plane.comp.interfaces.EntityInterface;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import org.lwjgl.Sys;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Created by sebastian on 2014/07/28.
+ * Manage and Store Entity References
  */
 public class EntityManager {
 
-    /**
-     * Entity References are not Stored, Except in the Components that they Compose (trick!)
-     */
+    private Map<String, EntityInterface> entities;
+
     public EntityManager () {
-
+        init();
     }
 
-    // do the test
-    public BaseEntity createEntityEntity ( Object... params ) {
-        BaseEntity entity = new BaseEntity ( params );
-        entity.addComponent(new GenericGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity)); // todo: add AssetManager
-        entity.addComponent(new GenericInputComponent(entity));
-        return entity;
+    public boolean init () {
+        try {
+            entities = new HashMap<String, EntityInterface>();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
-    // does not exist yet
-    public BaseEntity createPlayerEntity ( Object... params ) {
-        BaseEntity entity = new BaseEntity ( params );
-        entity.addComponent(new PlayerGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity)); // todo: add AssetManager
-        entity.addComponent(new GenericInputComponent(entity));
-        return entity;
+    public EntityInterface getEntity (String entityId) {
+        try {
+            return entities.get(entityId);
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void addEntity (String entityId, EntityInterface entity) {
+        if (getEntity(entityId) == null) {
+            entities.put(entityId, entity);
+        }else {
+            System.out.println("Something Broke, UP the Chain! - EntityManager:addEntity:"+entityId+" resulted in a duplicate and did not 'addEntity'");
+        }
     }
 
     // todo: define complete list of entity creation functions
@@ -41,16 +57,37 @@ public class EntityManager {
 
     // todo: define params according to Map from Text Config.. (central)
     public EntityInterface createGroundEntity ( Object... params ) {
-        GroundEntity entity = new GroundEntity( params[0] ); // passing in null (for now)
-        entity.addComponent(new GroundGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity, new Float(params[2].toString())));
+        String entityId = (String) params[0];
+        EntityInterface entity = getEntity(entityId);
+        if (entity == null) {
+            entity = new GroundEntity( null ); // passing in null (for now)
+            entity.addComponent(new GroundGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity, new Float(params[2].toString())));
+            addEntity(entityId, entity);
+        }
         return entity;
     }
 
     public EntityInterface createPlaneEntity (Object... params) {
-        PlaneEntity entity = new PlaneEntity( params );
-        entity.addComponent(new PlayerGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity));
-        entity.addComponent(new PlayerInputComponent(entity));
-        //entity.a
+        String entityId = (String) params[0];
+        EntityInterface entity = getEntity(entityId);
+        if (entity == null) {
+            entity = new PlaneEntity(params);
+            entity.addComponent(new PlayerGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity));
+            entity.addComponent(new PlayerInputComponent(entity));
+            addEntity(entityId, entity);
+        }
         return entity;
     }
+
+//    public EntityInterface createEnemyEntity (Object... params) {
+//        String entityId = (String) params[0];
+//        EntityInterface entity = getEntity(entityId);
+//        if (entity != null) {
+//            entity = new PlaneEntity(params);
+//            entity.addComponent(new EnemyGraphicsComponent(new Texture(Gdx.files.internal(params[1].toString())), entity));
+//            entity.addComponent(new EnemyInputComponent(entity));
+//            addEntity(entityId, entity);
+//        }
+//        return entity;
+//    }
 }
