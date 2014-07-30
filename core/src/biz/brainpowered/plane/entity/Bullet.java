@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Array;
  * Date: 2014/05/30
  * Time: 2:03 PM
  * To change this template use File | Settings | File Templates.
+ * @deprecated old
  */
 public class Bullet extends SpriteEntity
 {

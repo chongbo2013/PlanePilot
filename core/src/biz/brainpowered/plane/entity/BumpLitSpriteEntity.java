@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
  * Created by sebastian on 2014/07/25.
+ * @deprecated old
+ * @todo refactor
  */
 public class BumpLitSpriteEntity extends SpriteEntity {
     protected boolean _bumpLit;

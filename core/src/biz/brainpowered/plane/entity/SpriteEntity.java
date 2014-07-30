@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  * Created by sebastian on 2014/07/24.
  * SpriteEntity implies renderable graphics item;
  * @todo implement Component SpriteEntity System...
+ * @deprecated old
  */
 public class SpriteEntity { // todo: re-define as SpriteEntity
     protected boolean _dispose;

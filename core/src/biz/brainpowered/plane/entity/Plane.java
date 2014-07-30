@@ -24,6 +24,8 @@ import java.util.Vector;
  * Date: 2014/05/29
  * Time: 8:31 AM
  * To change this template use File | Settings | File Templates.
+ * @deprecated old
+ * @see biz.brainpowered.plane.comp.entities.PlaneEntity
  */
 public class Plane extends BumpLitSpriteEntity implements InputProcessor
 {

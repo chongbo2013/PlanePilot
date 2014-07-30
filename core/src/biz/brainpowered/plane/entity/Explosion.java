@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.Array;
  * Date: 2014/05/29
  * Time: 2:28 PM
  * To change this template use File | Settings | File Templates.
+ * @deprecated refactor
  */
 public class Explosion extends SpriteEntity {
 

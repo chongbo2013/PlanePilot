@@ -16,6 +16,8 @@ import com.badlogic.gdx.math.Vector2;
  * Date: 2014/05/29
  * Time: 11:21 AM
  * To change this template use File | Settings | File Templates.
+ * @deprecated old
+ * @todo refactor
  */
 public class Enemy extends SpriteEntity // todo: rename to SpriteEntity
 {

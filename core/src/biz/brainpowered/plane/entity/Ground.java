@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
  * @author sebastian
  * @since 2014/05/30
  * Represents Two Large Sprites that Scroll Down the Screen representing the Ground
+ * @deprecated old
+ * @see biz.brainpowered.plane.comp.entities.GroundEntity
  */
 public class Ground
 {
