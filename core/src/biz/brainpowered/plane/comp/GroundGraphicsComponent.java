@@ -1,5 +1,6 @@
 package biz.brainpowered.plane.comp;
 
+import biz.brainpowered.plane.comp.entities.GroundEntity;
 import biz.brainpowered.plane.comp.interfaces.EntityInterface;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,17 +15,17 @@ public class GroundGraphicsComponent extends GenericGraphicsComponent {
 
     float _width;
     float _height;
-    float _xVelocity;   // required for horizontal scolling
-    float _yVelocity;
 
-    public GroundGraphicsComponent(Texture texture, EntityInterface entity, float initalXVelocity) {
+    //float _xVelocity;   // required for horizontal scolling
+    //float _yVelocity;
+
+    public GroundGraphicsComponent(Texture texture, EntityInterface entity) {
         super(texture, entity);
-
 
         _width = Gdx.graphics.getWidth();
         _height = Gdx.graphics.getHeight();
 
-        _yVelocity = initalXVelocity;
+        //_yVelocity = ((GroundEntity)_entity).groundSpeed;
 
         // todo: investigate if this is needed
         //texture = new Texture(groundTexturePath);
@@ -37,14 +38,15 @@ public class GroundGraphicsComponent extends GenericGraphicsComponent {
         _sprite2.setPosition(0.0f, _sprite.getHeight()+_sprite.getY());
     }
 
-
-
-    // this case requires that entity position be applied to sprite
+    /**
+     * Entity Position isn't concerned as the internal calculations work differently
+     * @param batch
+     */
     public void update ( SpriteBatch batch ) {
         float deltaT = Gdx.graphics.getDeltaTime();
         float velocityModifier = 1.0f;
 
-        float deltaYV = -(deltaT * (_yVelocity * velocityModifier));
+        float deltaYV = -(deltaT * (((GroundEntity)_entity).groundSpeed * velocityModifier));
         if (_sprite.getY() <= -_height){
             // off screen - move back up
             _sprite.setPosition(0, _sprite2.getY() + _sprite2.getHeight());
@@ -60,15 +62,6 @@ public class GroundGraphicsComponent extends GenericGraphicsComponent {
 
         _sprite.draw(batch);
         _sprite2.draw(batch);
-
-
-        // note - drawing data may be needed to be pre-calculated (j.i.c.)
-//        if ( !draw(_entity.getDrawConfig(), batch) ) {
-        // todo: instead of setting values, just draw in place
-//        _sprite.setX(_entity.getX());
-//        _sprite.setY(_entity.getY());
-//        _sprite.draw(batch); // the common fallback
-//        }
     }
 
 //    private boolean draw ( DrawConfig dc, SpriteBatch batch ) {
@@ -76,8 +69,4 @@ public class GroundGraphicsComponent extends GenericGraphicsComponent {
 //        return false;
 //    }
 
-//    @Override
-//    public void registerComponent() {
-//        GraphicsComponentGroup.getInstance().addComponent(this);
-//    }
 }

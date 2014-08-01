@@ -22,4 +22,15 @@ public class BaseComponent implements ComponentInterface {
     public void registerComponent() {
         ComponentGroupManager.getInstance().getComponentGroup(_name).addComponent(this);
     }
+
+    /**
+     * One-sided De-referencing
+     */
+    public void dispose(){
+        _entity.setDispose(true);
+    }
+
+    public boolean checkDispose(){
+        return _entity.getDispose();
+    }
 }

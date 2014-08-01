@@ -4,21 +4,19 @@ import biz.brainpowered.plane.comp.interfaces.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
-import java.util.HashMap;
-
 /**
  * Created by sebastian on 2014/07/28.
  * GraphicsComponentGroup Singleton
  */
-public class GraphicsComponentGroup implements GraphicsComponentGroupInterface {
+public class LightComponentGroup implements LightComponentGroupInterface {
 
-    private static GraphicsComponentGroupInterface instance = new GraphicsComponentGroup();
-    private Array<GraphicsComponentInterface> components;
-    private GraphicsComponentGroup()
+    private static LightComponentGroupInterface instance = new LightComponentGroup();
+    private Array<LightComponentInterface> components;
+    private LightComponentGroup()
     {
         init();
     }
-    public static GraphicsComponentGroupInterface getInstance()
+    public static LightComponentGroupInterface getInstance()
     {
         return instance;
     }
@@ -27,7 +25,7 @@ public class GraphicsComponentGroup implements GraphicsComponentGroupInterface {
     public boolean init() {
         try
         {
-            components = new Array<GraphicsComponentInterface>();
+            components = new Array<LightComponentInterface>();
         }
         catch (Exception e)
         {
@@ -40,12 +38,12 @@ public class GraphicsComponentGroup implements GraphicsComponentGroupInterface {
 
     @Override
     public void addComponent(ComponentInterface component) {
-        components.add((GraphicsComponentInterface)component);
+        components.add((LightComponentInterface)component);
     }
 
     @Override
     public Array<LightComponentInterface> getComponents() {
-        return null;
+        return components;
     }
 
     public void addComponent(GraphicsComponentInterface componentInterface) {
@@ -63,4 +61,9 @@ public class GraphicsComponentGroup implements GraphicsComponentGroupInterface {
             }
         }
     }
+
+    /**
+     * todo: Decisions to be made here
+     */
+    // Get Lights, or Run Renderer within this (injection)
 }

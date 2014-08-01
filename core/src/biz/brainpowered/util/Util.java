@@ -3,8 +3,9 @@ package biz.brainpowered.util;
 /**
  * Created by sebastian on 2014/07/18.
  */
+import com.badlogic.gdx.files.FileHandle;
+
 import java.util.ArrayList;
-import java.util.Random;
 
 public class Util {
 
@@ -31,4 +32,14 @@ public class Util {
         //there are some elements left in the tail - clean them
         lst.subList( pTo, len ).clear();
     }
+
+//    public static JSONObject loadGlobalConfig (FileHandle fileHandle) {
+//        // map the Loaded JSON properties to the GlobalConfig Model (reflection?)
+//        // scenes too
+//    }
+//
+//    public static void loadScene (String name) {
+//        // file contents = global.scenes+name.json
+//        //pass properties into Scene constructor and push back to Scene/GameManger
+//    }
 }

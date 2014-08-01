@@ -135,8 +135,8 @@ public class Pilot implements ApplicationListener
         bumpRenderer = new BumpRenderer("shaders/bumpFragment.glsl", cam);
         bumpRenderer.init();
 
-        simpleLightsRenderer = new SimpleLightsRenderer("light.png", lights);
-        simpleLightsRenderer.init();
+//        simpleLightsRenderer = new SimpleLightsRenderer("light.png", lights);
+//        simpleLightsRenderer.init();
 
         font = new BitmapFont();
 
@@ -201,7 +201,7 @@ public class Pilot implements ApplicationListener
         // delta time is useful for rendering -> pass it into all render/draw functions
         final float dt = Gdx.graphics.getRawDeltaTime();
 
-        simpleLightsRenderer.render(batch);// TODO: get reference for FBO for simple lights and integrate into Final Renderer
+        //simpleLightsRenderer.render(batch);// TODO: get reference for FBO for simple lights and integrate into Final Renderer
 
         // render lights
         lightMapRenderer.renderLights(batch, lights, enemyCollection); // todo: implement complete Occlusion entity collection object
@@ -336,7 +336,7 @@ public class Pilot implements ApplicationListener
     @Override
     public void resize(final int width, final int height)
     {
-        simpleLightsRenderer.resize(width, height);
+        //simpleLightsRenderer.resize(width, height);
         lightMapRenderer.resize(width, height, batch);
         bumpRenderer.resize(width, height);
     }

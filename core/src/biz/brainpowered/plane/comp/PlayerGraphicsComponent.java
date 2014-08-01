@@ -1,6 +1,8 @@
 package biz.brainpowered.plane.comp;
 
 import biz.brainpowered.plane.comp.interfaces.EntityInterface;
+import biz.brainpowered.plane.comp.interfaces.SpriteEntityInterface;
+import biz.brainpowered.plane.manager.GameManager;
 import biz.brainpowered.plane.model.PlaneConfig;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -61,10 +63,9 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
     Texture _normalMap;
 
     // pass a complete parameter list in here, thanks
-    public PlayerGraphicsComponent(Texture texture, EntityInterface entity) {
+    public PlayerGraphicsComponent(Texture texture, SpriteEntityInterface entity) {
         super(texture, entity);
-        _normalMap = new Texture(Gdx.files.internal("airplane/PLANE_8_N_NRM.png"));
-        // more assignments..
+        _normalMap = GameManager.assetLoader.get("airplane/PLANE_8_N_NRM.png", "Texture");//new Texture(Gdx.files.internal("airplane/PLANE_8_N_NRM.png"));
 
         PlaneConfig pc = new PlaneConfig();
         pc.normalTP = "airplane/PLANE_8_N.png";
@@ -75,20 +76,6 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
         // assignment
         this.pc = pc;
         scale = pc.scale;
-
-        //bulletCollection = bc;
-
-        // control management
-        //directionKeyReleased = true;
-
-        // player management
-//        baseAcell = 0.333f;
-//        highestAccelX = 6.66f;
-//        highestAccelY = 6.66f;
-//        currentMaxAccelX = 0;
-//        currentMaxAccelY = 0;
-//        elapsedTime = 0;
-//        lastInputCheck = 0;
 
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
@@ -102,14 +89,14 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
         try
         {
             // instanciation
-            normalT = new Texture(Gdx.files.internal(pc.normalTP)); // create Texture from TexturePath
-            leftT = new Texture(Gdx.files.internal(pc.leftTP));
-            rightT = new Texture(Gdx.files.internal(pc.rightTP));
+            normalT = GameManager.assetLoader.get(pc.normalTP, "Texture");//new Texture(Gdx.files.internal(pc.normalTP)); // create Texture from TexturePath
+            leftT = GameManager.assetLoader.get(pc.leftTP, "Texture");//new Texture(Gdx.files.internal(pc.leftTP));
+            rightT = GameManager.assetLoader.get(pc.rightTP, "Texture");//new Texture(Gdx.files.internal(pc.rightTP));
             RIGHT = rightT;
             LEFT = leftT;
             NORMAL = normalT;
 
-            // instead of scaling the Sprite each time (to global.planeScale), just downscale the texture once here
+            // todo: instead of scaling the Sprite each time (to global.planeScale), just downscale the texture once here
 
             // also set origin of sprite
             _sprite = new Sprite();
@@ -125,14 +112,21 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
             _sprite.set(normalS);
             _sprite.setOrigin(normalS.getWidth() / 2, 0);
 
+            /**
+             * Specials Notes:
+             * Need to investigate if casting is required (but will need to push down the SpriteEntityInterface methods) to Entity Interface
+             */
+            _entity.setWidth(_sprite.getWidth());
+            _entity.setHeight(_sprite.getHeight());
+
             // some old pasty here - move paths to config
-            planeShadowTexture = new Texture(Gdx.files.internal("airplane/PLANE_8_SHADOW.png"));
+            planeShadowTexture = GameManager.assetLoader.get("airplane/PLANE_8_SHADOW.png", "Texture");//new Texture(Gdx.files.internal("airplane/PLANE_8_SHADOW.png"));
             planeShadow = new Sprite(planeShadowTexture);
             planeShadow.setScale(0.3f, 0.3f);
 
             propellerNumber = 1;
-            propellerTexture1 = new Texture(Gdx.files.internal("airplane/PLANE_PROPELLER_1.png"));
-            propellerTexture2 = new Texture(Gdx.files.internal("airplane/PLANE_PROPELLER_2.png"));
+            propellerTexture1 = GameManager.assetLoader.get("airplane/PLANE_PROPELLER_1.png", "Texture");//new Texture(Gdx.files.internal("airplane/PLANE_PROPELLER_1.png")); // TODO: get from asset manager
+            propellerTexture2 = GameManager.assetLoader.get("airplane/PLANE_PROPELLER_2.png", "Texture");//new Texture(Gdx.files.internal("airplane/PLANE_PROPELLER_2.png"));
             propTexArray = new Vector<Texture>();
             propTexArray.add(0, propellerTexture1);
             propTexArray.add(1, propellerTexture2);
@@ -141,6 +135,7 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
 //
             schedulePropeller();
 
+            // todo: implement SoundComponent
             // control management
 //            directionKeyReleased = true;
 //            fire = Gdx.audio.newSound(Gdx.files.internal("sound/219622__ani-music__little-zap-zaps-1a.wav"));
@@ -167,7 +162,6 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
     }
 
     public void setNewPosition(float maxX, float minX, float maxY, float minY, float newX, float newY) {
-
         // TODO: center shadow origin
         float newXshadow = newX+_sprite.getX();
         float newYshadow = newY+_sprite.getY();
@@ -193,15 +187,15 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
         propeller.setPosition(newXpropeller, newYpropeller);
 
         _sprite.setX(Math.round(newX));
-
         //System.out.println("newX: "+newX);
         _sprite.setY(Math.round(newY));
+
+        _entity.setY(newY);
+        _entity.setX(newX);
     }
 
     @Override
     public void update(SpriteBatch batch) {
-        //super.update(batch);
-
         planeShadow.draw(batch);
         _normalMap.bind(1);
         //bind diffuse color to texture unit 0
@@ -211,6 +205,7 @@ public class PlayerGraphicsComponent extends GenericGraphicsComponent {
         propeller.draw(batch);
     }
 
+    // todo: should be interfaced
     public float getWidth() {
         return _sprite.getWidth();
     }

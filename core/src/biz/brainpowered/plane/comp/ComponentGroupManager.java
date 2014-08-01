@@ -13,6 +13,7 @@ public class ComponentGroupManager {
 
     public static String GRAPHICS = "Graphics";
     public static String INPUT = "Input";
+    public static String LIGHT = "Light";
 
     Map<String, ComponentGroupInterface> map;
     private static ComponentGroupManager instance = new ComponentGroupManager();

@@ -9,8 +9,11 @@ public interface ComponentInterface {
     /**
      * add component to the Group
      */
-    public void registerComponent ();
+    public void registerComponent();
 
-    public String getName ();
+    public String getName();
 
+    public void dispose();
+
+    public boolean checkDispose();
 }

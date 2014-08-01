@@ -29,8 +29,8 @@ public class GenericInputComponent extends BaseComponent implements InputCompone
                  * and then finally alternative Fast mapping techniques acheiving the same outcome
                  */
 
-                _entity.setX(mx);
-                _entity.setY(my);
+                ((SpriteEntityInterface)_entity).setX(mx);
+                ((SpriteEntityInterface)_entity).setY(my);
                 return true;
             }
 

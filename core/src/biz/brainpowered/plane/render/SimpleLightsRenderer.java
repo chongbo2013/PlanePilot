@@ -1,5 +1,8 @@
 package biz.brainpowered.plane.render;
 
+import biz.brainpowered.plane.comp.LightComponent;
+import biz.brainpowered.plane.comp.interfaces.LightComponentInterface;
+import biz.brainpowered.plane.manager.GameManager;
 import biz.brainpowered.plane.model.Light;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -15,12 +18,11 @@ import com.badlogic.gdx.utils.Array;
  * todo: get fbo reference - dont return the FBO...
  */
 public class SimpleLightsRenderer {
-
     private FrameBuffer frameBuffer;
     private int width;
     private int height;
-    private Array<Light> lights;
-    private Light tmpLight;
+    private Array<LightComponentInterface> lights;
+    private LightComponentInterface tmpLight;
     private Texture lightTex;
 
     // pass in light size somwhere
@@ -34,9 +36,9 @@ public class SimpleLightsRenderer {
     private boolean	lightMove = false;
     private boolean lightOscillate = false;
 
-    public SimpleLightsRenderer (String lightTexturePath, Array<Light> lights) {
+    public SimpleLightsRenderer (String lightTexturePath, Array<LightComponentInterface> lights) {
         // todo: load light texture and vars
-        lightTex = new Texture(Gdx.files.internal(lightTexturePath));
+        lightTex = GameManager.assetLoader.get(lightTexturePath, "Texture");
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
         this.lights = lights;
@@ -67,7 +69,7 @@ public class SimpleLightsRenderer {
         while(zAngle > PI2)
             zAngle -= PI2;
 
-        frameBuffer.begin();
+        //frameBuffer.begin();
         batch.setShader(null); // passthrough
         Gdx.gl.glClearColor(0f, 0f, 0f, 0f); // clear with white opaque
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -84,14 +86,14 @@ public class SimpleLightsRenderer {
             // this method is invalid as all lights now are contained in a single array,
             // also only simple lights need be rendered here
             batch.draw(lightTex,
-                    tmpLight.x,
-                    tmpLight.y,
+                    ((LightComponent)tmpLight).x,
+                    ((LightComponent)tmpLight).y,
                     lightSize,
                     lightSize);
             // todo: light size to change over time
         }
         batch.end();
-        frameBuffer.end();
+        //frameBuffer.end();
         return frameBuffer;
     }
 }

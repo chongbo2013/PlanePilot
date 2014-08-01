@@ -13,7 +13,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class GenericGraphicsComponent extends BaseComponent implements GraphicsComponentInterface {
     Texture _texture;
     Sprite _sprite;
-    //private SpriteEntityInterface _entity; // TODO: rather implement 'spacial' Component for entity
 
     // pass in *this and the Texture from the Asset Manager
     public GenericGraphicsComponent ( Texture texture, EntityInterface entity ) {
@@ -37,10 +36,4 @@ public class GenericGraphicsComponent extends BaseComponent implements GraphicsC
 //        // May be required to do Lights/Shadows/BumpMaps Halleluja - not now
 //        return false;
 //    }
-
-//    @Override
-//    public void registerComponent() {
-//        GraphicsComponentGroup.getInstance().addComponent(this);
-//    }
-
 }

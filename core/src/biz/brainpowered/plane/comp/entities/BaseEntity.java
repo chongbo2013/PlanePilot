@@ -15,16 +15,19 @@ import java.util.Map;
  * Created by sebastian on 2014/07/28.
  * Generic Tester Object
  * Also represents a Component Bag currently (this one is very Generic)
+ * @deprecated Sprite Entity is the preferred Object due to it being more descriptive
  */
 public class BaseEntity implements EntityInterface {
     // Components will Keep Reference to entity
     Map<String, ComponentInterface> components;
-
+    private boolean _dispose = false;
 //    // Generics
     float _x;   // x-axis position
     float _y;   // y-axis position
     float _v;   // velocity
     float _r;   // rotation/angle
+    float _w;   // rotation/angle
+    float _h;   // rotation/angle
 //
 //    // Specifics
     float MAX_Y_VELOCITY = 13f;
@@ -85,11 +88,61 @@ public class BaseEntity implements EntityInterface {
 
     @Override
     public void setY(float y) {
-        _y = y;
+        _y =y;
     }
 
     @Override
     public float getY() {
         return _y;
     }
+
+    @Override
+    public void setWidth(float w) {
+        _w = w;
+    }
+
+    @Override
+    public float getWidth() {
+        return 0;
+    }
+
+    @Override
+    public void setHeight(float h) {
+        _h = h;
+    }
+
+    @Override
+    public float getHeight() {
+        return 0;
+    }
+
+    @Override
+    public void setDispose(boolean dispose) {
+        _dispose = dispose;
+    }
+
+    @Override
+    public boolean getDispose() {
+        return _dispose;
+    }
+
+//    @Override
+//    public void setX(float x) {
+//        _x = x;
+//    }
+//
+//    @Override
+//    public float getX() {
+//        return _x;
+//    }
+//
+//    @Override
+//    public void setY(float y) {
+//        _y = y;
+//    }
+//
+//    @Override
+//    public float getY() {
+//        return _y;
+//    }
 }

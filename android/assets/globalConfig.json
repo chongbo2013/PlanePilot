@@ -4,11 +4,19 @@
         "scenes": "/scenes",
         "shaders": "/shaders",
         "sound": "/sound",
-
+        "font": "/font"
     },
-    "scenes":
+    "levels":
     [
-        "splash",
-        "game"
-    ]
+        "tutorial",
+        "level1"
+    ],
+    "velocities":
+    {
+        "PlayerBullet": 90
+    },
+    "scales":
+    {
+        "PlaneScale": 0.5
+    }
 }

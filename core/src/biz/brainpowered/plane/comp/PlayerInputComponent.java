@@ -1,17 +1,16 @@
 package biz.brainpowered.plane.comp;
 
+import biz.brainpowered.plane.comp.entities.PlaneEntity;
 import biz.brainpowered.plane.comp.interfaces.EntityInterface;
 import biz.brainpowered.plane.comp.interfaces.InputComponentInterface;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 
 /**
  * Created by sebastian on 2014/07/28.
  */
 public class PlayerInputComponent extends BaseComponent implements InputComponentInterface {
-
 
     // TODO: Movement Class
     double currentMaxAccelX;
@@ -28,9 +27,10 @@ public class PlayerInputComponent extends BaseComponent implements InputComponen
     private float appWidth;
     private float appHeight;
 
+    private float minimumBulletInterval = 0.1f;
+
     public PlayerInputComponent(EntityInterface entity) {
         super(ComponentGroupManager.INPUT, entity);
-
 
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
@@ -46,9 +46,7 @@ public class PlayerInputComponent extends BaseComponent implements InputComponen
         elapsedTime = 0;
         lastInputCheck = 0;
 
-
-
-//        // todo: inject custom callbacks into InputComponents
+//        // todo: inject custom callbacks(Processors) into InputComponents
 //        Gdx.input.setInputProcessor(new InputAdapter() {
 //
 //            public boolean touchDown(int x, int y, int pointer, int button) {
@@ -104,8 +102,12 @@ public class PlayerInputComponent extends BaseComponent implements InputComponen
         }
         elapsedTime += Gdx.graphics.getDeltaTime();
 
-
-
+        // TODO: Level progression will modify this value
+        if ((lastInputCheck + minimumBulletInterval) < (elapsedTime)) {
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+                ((PlaneEntity) _entity).fireBullet();
+            }
+        }
 
         // POSITION PLANE
         // ACELLEROMETER CONTROLS
@@ -139,7 +141,6 @@ public class PlayerInputComponent extends BaseComponent implements InputComponen
             ((PlayerGraphicsComponent)_entity.getComponent("Graphics")).setSpriteTexture(PlayerGraphicsComponent.NORMAL);
         }
 
-
         // DO GRAPHICS ADJUSTMENTS ACCORDING TO MIN AND MAX XY VALUES
         float maxY = appWidth - ((PlayerGraphicsComponent)_entity.getComponent("Graphics")).getWidth();
         float minY = 0;
@@ -151,9 +152,10 @@ public class PlayerInputComponent extends BaseComponent implements InputComponen
         float newY = 0.0f + (float)currentMaxAccelY *10;
 
 
+        // todo: do more of this
+        //((SpriteEntityInterface)_entity).setX(newX);r
+
+        // TODO: streamline/break down this big indirection
         ((PlayerGraphicsComponent)_entity.getComponent("Graphics")).setNewPosition(maxX, 0, maxY, 0, newX, newY);
-
-
     }
-
 }

@@ -1,10 +1,15 @@
 package biz.brainpowered.plane.comp.entities;
 
 /**
- * Created by sebastian on 2014/07/29.
+ * Composes a Specialised Graphics Component
+ *
  */
-public class GroundEntity extends BaseEntity {
-    public GroundEntity(Object params) {
-        super(params);
+public class GroundEntity extends SpriteEntity {
+
+    public float groundSpeed;
+
+    public GroundEntity(float groundSpeed) {
+        super( null );
+        this.groundSpeed = groundSpeed;
     }
 }

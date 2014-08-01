@@ -18,6 +18,8 @@ public class SpriteEntity extends BaseEntity implements SpriteEntityInterface {
     float _y;   // y-axis position
     float _v;   // velocity
     float _r;   // rotation/angle
+    float _w;   // width
+    float _h;   // height
 
     // Specifics
     float MAX_Y_VELOCITY = 13f;
@@ -29,9 +31,6 @@ public class SpriteEntity extends BaseEntity implements SpriteEntityInterface {
 
     public SpriteEntity(Object params) {
         super(params);
-        _x = 100;
-        _y = 100;
-        // not much
     }
 
     @Override
@@ -72,5 +71,25 @@ public class SpriteEntity extends BaseEntity implements SpriteEntityInterface {
     @Override
     public float getY() {
         return _y;
+    }
+
+    @Override
+    public void setWidth(float w) {
+        _w = w;
+    }
+
+    @Override
+    public float getWidth() {
+        return _w;
+    }
+
+    @Override
+    public void setHeight(float h) {
+        _h = h;
+    }
+
+    @Override
+    public float getHeight() {
+        return _h;
     }
 }

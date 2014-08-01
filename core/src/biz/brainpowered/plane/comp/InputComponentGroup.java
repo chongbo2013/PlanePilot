@@ -45,6 +45,11 @@ public class InputComponentGroup implements InputComponentGroupInterface {
         components.add((InputComponentInterface) componentInterface);
     }
 
+    @Override
+    public Array<LightComponentInterface> getComponents() {
+        return null;
+    }
+
     /**
      * Iterates all Active components, calling thier update() method
      * @param param Potential parameters that may be needed
