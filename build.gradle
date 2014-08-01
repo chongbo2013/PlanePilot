@@ -38,6 +38,8 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "org.lwjgl.lwjgl:lwjgl_util:2.9.1"
 
+        compile fileTree(dir: '../libs', include: '*.jar')
+
     }
 }
 
@@ -63,6 +65,7 @@ project(":android") {
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a"
         natives "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86"
+
     }
 }
 
