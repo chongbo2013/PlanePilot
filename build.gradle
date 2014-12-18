@@ -6,7 +6,7 @@ buildscript {
     }
     dependencies {
         classpath 'de.richsource.gradle.plugins:gwt-gradle-plugin:0.4'
-        classpath 'com.android.tools.build:gradle:0.10+'
+        classpath 'com.android.tools.build:gradle:0.13.0'
         classpath 'com.github.jtakakura:gradle-robovm-plugin:0.0.9'
     }
 }
@@ -18,8 +18,8 @@ allprojects {
     version = '1.0'
     ext {
         appName = 'PlanePilot'
-        gdxVersion = '1.2.0'
-        roboVMVersion = '0.0.13'
+        gdxVersion = '1.5.0'
+        roboVMVersion = '0.0.14'
     }
 
     repositories {
