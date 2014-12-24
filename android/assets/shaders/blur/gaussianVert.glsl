@@ -1,3 +1,4 @@
+
 attribute vec4 a_position;
 attribute vec4 a_color;     // vertex colour - mostly unused
 attribute vec2 a_texCoord0; // first texture co-ord

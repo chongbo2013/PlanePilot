@@ -1,3 +1,5 @@
+#version 120
+
 /**
 #ifdef GL_ES
 precision mediump float;
@@ -13,7 +15,7 @@ varying vec4 vColor;
 
 // todo: implement array of shocks
 
-void main() { 
+void main() {
     vec2 uv = vTexCoord0.xy;
     vec2 texCoord = uv;
     float dist = distance(uv, center);
@@ -40,10 +42,14 @@ precision mediump float;
 varying vec2 v_texCoord0;
 varying vec4 v_color;
 
-uniform MED sampler2D u_texture0;
+//uniform MED sampler2D u_texture1;
+uniform float BloomIntensity;
+uniform float OriginalIntensity;
+uniform float time; // effect elapsed time
 uniform vec3 shockParams; // 10.0, 0.8, 0.1
 uniform vec2 center; // effect center position
-uniform float time; // effect elapsed time
+
+uniform MED sampler2D u_texture0;
 
 vec2 diffraction(vec2 uv){
    vec2 differ = uv - center;
@@ -62,5 +68,11 @@ vec2 diffraction(vec2 uv){
 
 void main()
 {
-    gl_FragColor =  texture2D(u_texture0, diffraction(v_texCoord0));
+        //calculate biased texture coords
+   vec2 texCoords = diffraction(v_texCoord0);
+   //normal bloom
+   vec4 original = texture2D(u_texture0, texCoords) * OriginalIntensity;
+   vec4 bloom = texture2D(u_texture0, v_texCoord0) * BloomIntensity;
+   original = original *  (1.0 - bloom);
+    gl_FragColor =  original + bloom;
 }
