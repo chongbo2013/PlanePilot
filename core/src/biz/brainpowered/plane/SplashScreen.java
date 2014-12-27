@@ -31,6 +31,7 @@ public class SplashScreen implements Screen {
     int appWidth;
     int appHeight;
 
+    // these goodies go into BaseRender
     private SpriteBatch batch;
     private Game myGame;
     private Texture texture;
@@ -45,10 +46,10 @@ public class SplashScreen implements Screen {
 
     private static TweenManager tweenManager;
 
-    // inline for now - todo: go global
+    // inline for now - todo: singleton plz
     GameManager gm;
     Screen iAm;
-    TweenCallback cb;
+    TweenCallback cb; // not eve the right place
 
     public SplashScreen (Game game) {
         iAm = this;
@@ -64,7 +65,7 @@ public class SplashScreen implements Screen {
         gm = new GameManager();
         gm.init();
 
-        // Load AssetLoader with Asset List
+        // TODO: Load AssetLoader with Asset List
         GameManager.assetLoader.loadAsset("font/Reload.fnt", "BitmapFont");
         GameManager.assetLoader.loadAsset("splash.png", "Texture");
         GameManager.assetLoader.loadAsset("progressbar.png", "Texture");
@@ -84,6 +85,7 @@ public class SplashScreen implements Screen {
         tweenManager = new TweenManager();
 
 
+        // ComponentGroup - aka System
         ComponentGroupManager.getInstance().registerComponentGroup(ComponentGroupManager.GRAPHICS, GraphicsComponentGroup.getInstance());
         ComponentGroupManager.getInstance().registerComponentGroup(ComponentGroupManager.INPUT, InputComponentGroup.getInstance());
         ComponentGroupManager.getInstance().registerComponentGroup(ComponentGroupManager.LIGHT, LightComponentGroup.getInstance());
@@ -154,6 +156,10 @@ public class SplashScreen implements Screen {
                 .start(tweenManager);
     }
 
+    /**
+     * @todo: fix these makeshift if/elses
+     * @param delta
+     */
     @Override
     public void render(float delta) {
 
@@ -161,6 +167,9 @@ public class SplashScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         tweenManager.update(Gdx.graphics.getDeltaTime());
+
+
+        // todo: state will determine what gets added to the entitymanager, this will render automatically
 
         if (!init){
             if (GameManager.assetLoader.finishedLoading) {

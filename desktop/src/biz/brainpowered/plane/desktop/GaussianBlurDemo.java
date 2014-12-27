@@ -19,7 +19,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * LibGDX port of ShaderLesson6, i.e. normal mapping in 2D games.
  * @author davedes
  */
-public class ShockwaveDemo implements ApplicationListener {
+public class GaussianBlurDemo implements ApplicationListener {
 
 
     public static void main(String[] args) {
@@ -27,14 +27,13 @@ public class ShockwaveDemo implements ApplicationListener {
         cfg.width = 640;
         cfg.height = 480;
         cfg.resizable = false;
-        new LwjglApplication(new ShockwaveDemo(), cfg);
+        new LwjglApplication(new GaussianBlurDemo(), cfg);
     }
 
     Texture grass, guy;
     SpriteBatch batch;
     OrthographicCamera cam;
     ShaderProgram blurShader;
-    ShaderProgram shader;
 
     // Shockwave
     FrameBuffer fbo;
@@ -50,13 +49,13 @@ public class ShockwaveDemo implements ApplicationListener {
 
         ShaderProgram.pedantic = false;
         blurShader = new ShaderProgram(Gdx.files.internal("shaders/blur/gaussianVert.glsl").readString(), Gdx.files.internal("shaders/blur/gaussianFrag.glsl").readString());
-        shader = new ShaderProgram(Gdx.files.internal("shaders/shockwave/shockVert.glsl").readString(), Gdx.files.internal("shaders/shockwave/shockFrag.glsl").readString());
+
         //ensure it compiled
-        if (!shader.isCompiled())
-            throw new GdxRuntimeException("Could not compile shader: "+shader.getLog());
+        if (!blurShader.isCompiled())
+            throw new GdxRuntimeException("Could not compile shader: "+blurShader.getLog());
         //print any warnings
-        if (shader.getLog().length()!=0)
-            System.out.println(shader.getLog());
+        if (blurShader.getLog().length()!=0)
+            System.out.println(blurShader.getLog());
 
         fbo = new FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         fboTexRegion = new TextureRegion(fbo.getColorBufferTexture());
@@ -91,40 +90,25 @@ public class ShockwaveDemo implements ApplicationListener {
 
         float dt = Gdx.graphics.getDeltaTime();
         float anim = (float)Math.sin(playerTime+=0.02) * 100f;
-//        //clear the screen
-        //batch.setShader(null);
-        fbo.begin();
+
+        // Render to Frame Buffer
+        //fbo.begin();
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.setShader(null);
+
+
+        batch.setShader(blurShader);
         batch.begin();
-        //batch.setProjectionMatrix(cam.combined);
-        //batch.end();
+        blurShader.setUniformf("dir", 1.0f, 0.0f); //direction of blur; nil for now
+        blurShader.setUniformf("resolution", 1024); //size of FBO texture
+        blurShader.setUniformf("radius", 2.0f); //radius of blur
         batch.draw(grass, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0, 0, 2, 2);
+
+        // shader grabs first texture - blurs that only
 
         //draw some player sprites ...
         batch.draw(guy, 105, 50, guy.getWidth()*2, guy.getHeight()*2);
         batch.draw(guy, 255, 350, guy.getWidth()*2, guy.getHeight()*2);
-        batch.flush();
-//
-
-        batch.setShader(blurShader);
-        //batch.begin();
-        blurShader.setUniformf("screenSize", 640.0f, 480.0f);
-        blurShader.setUniformf("time", time += dt * 1.0f, 0.0f, 0.0f, 0.0f);
         batch.draw(guy, 300+anim, 150, guy.getWidth()*2, guy.getHeight()*2);
-
-        batch.end();
-        fbo.end();
-
-        // POST PROCESS
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        batch.setShader(shader);// = shockwaveShader;
-        batch.begin();
-        shader.setUniformf("shockParams", 10.0f, 0.6f, 0.1f);   // fiddle with these
-        shader.setUniformf("time", time += dt * 0.8f);
-        shader.setUniformf("center", mouseX, mouseY);
-        //System.out.println("center: "+mouseX+" - "+mouseY);
-        batch.draw(fboTexRegion, 0, 0); // shader effects this texture
         batch.end();
     }
 
@@ -143,6 +127,6 @@ public class ShockwaveDemo implements ApplicationListener {
         batch.dispose();
         grass.dispose();
         guy.dispose();
-        shader.dispose();
+        blurShader.dispose();
     }
 }
