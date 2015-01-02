@@ -37,9 +37,9 @@ void main ()
 	vec4 dst = texture2D(u_texture0, vTexCoord0); // rendered scene
 	vec4 src = texture2D(u_texture1, vTexCoord0); // glowmap
 
-    if(src.a == 0.0){
-        discard;
-    }
+//    if(src.a == 0.0){
+//        discard;
+//    }
 
 	if ( BlendMode == 0 )
 	{
