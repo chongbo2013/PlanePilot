@@ -50,8 +50,12 @@ void main()
 	//gl_FragColor.rgb = (tex.rgb-threshold) * thresholdInvTx;
 
 	// masked threshold (use texture's alpha channel)1
-	gl_FragColor = vec4((tex.rgb-threshold) * thresholdInvTx * tex.a, tex.a);
-
+	//gl_FragColor = vec4((tex.rgb-threshold) * thresholdInvTx * tex.a, tex.a);
+	if(tex.r > threshold || tex.g > threshold || tex.b > threshold){
+gl_FragColor = vec4(tex);
+}else{
+gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+}
 	// alpha threshold
 	//gl_FragColor = (tex-threshold) * thresholdInvTx;
 }
