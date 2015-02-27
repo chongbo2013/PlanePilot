@@ -1,41 +1,26 @@
-/// Author:		Nathaniel Meyer
-///
-/// Copyright:	Nutty Software
-///				http://www.nutty.ca
-
-
-/// <summary>
-/// Fragment shader for blending two textures using an algorithm that overlays the
-/// glowmap.
-/// </summary>
-
 
 #ifdef GL_ES
 	precision highp float;
 #endif
 
 
-/// <summary>
 /// Uniform variables.
-/// <summary>
-uniform sampler2D Sample0;
-uniform sampler2D Sample1;
+uniform sampler2D u_texture0;   //orig map
+uniform sampler2D u_texture1;   //glow map
 uniform int BlendMode;
 
-
-/// <summary>
 /// Varying variables.
-/// <summary>
-varying vec2 vUv;
+varying vec2 vTexCoord0;
+varying vec2 vColor;
 
-
-/// <summary>
-/// Fragment shader entry.
-/// <summary>
 void main ()
 {
-	vec4 dst = texture2D(Sample0, vUv); // rendered scene
-	vec4 src = texture2D(Sample1, vUv); // glowmap
+	vec4 dst = texture2D(u_texture0, vTexCoord0); // rendered scene
+	vec4 src = texture2D(u_texture1, vTexCoord0); // glowmap
+
+//    if(src.a == 0.0){
+//        discard;
+//    }
 
 	if ( BlendMode == 0 )
 	{

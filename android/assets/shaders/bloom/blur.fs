@@ -18,7 +18,7 @@
 /// Uniform variables.
 /// <summary>
 uniform vec2 TexelSize;
-uniform sampler2D Sample0;
+uniform sampler2D u_texture0;
 
 uniform int Orientation;
 uniform int BlurAmount;
@@ -29,7 +29,9 @@ uniform float BlurStrength;
 /// <summary>
 /// Varying variables.
 /// <summary>
-varying vec2 vUv;
+varying vec2 vTexCoord0;
+varying vec2 vColor;
+
 
 
 /// <summary>
@@ -53,12 +55,12 @@ void main ()
 	float halfBlur = float(BlurAmount) * 0.5;
 	vec4 colour = vec4(0.0);
 	vec4 texColour = vec4(0.0);
-	
+
 	// Gaussian deviation
 	float deviation = halfBlur * 0.35;
 	deviation *= deviation;
 	float strength = 1.0 - BlurStrength;
-	
+
 	if ( Orientation == 0 )
 	{
 		// Horizontal blur
@@ -66,9 +68,9 @@ void main ()
 		{
 			if ( i >= BlurAmount )
 				break;
-			
+
 			float offset = float(i) - halfBlur;
-			texColour = texture2D(Sample0, vUv + vec2(offset * TexelSize.x * BlurScale, 0.0)) * Gaussian(offset * strength, deviation);
+			texColour = texture2D(u_texture0, vTexCoord0 + vec2(offset * TexelSize.x * BlurScale, 0.0)) * Gaussian(offset * strength, deviation);
 			colour += texColour;
 		}
 	}
@@ -79,14 +81,14 @@ void main ()
 		{
 			if ( i >= BlurAmount )
 				break;
-			
+
 			float offset = float(i) - halfBlur;
-			texColour = texture2D(Sample0, vUv + vec2(0.0, offset * TexelSize.y * BlurScale)) * Gaussian(offset * strength, deviation);
+			texColour = texture2D(u_texture0, vTexCoord0 + vec2(0.0, offset * TexelSize.y * BlurScale)) * Gaussian(offset * strength, deviation);
 			colour += texColour;
 		}
 	}
-	
+
 	// Apply colour
 	gl_FragColor = clamp(colour, 0.0, 1.0);
-	gl_FragColor.w = 1.0;
+	//gl_FragColor.w = 1.0;
 }
