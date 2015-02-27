@@ -7,6 +7,7 @@ import biz.brainpowered.plane.comp.interfaces.GraphicsComponentInterface;
 import biz.brainpowered.plane.comp.interfaces.SpriteEntityInterface;
 import biz.brainpowered.plane.manager.GameManager;
 import biz.brainpowered.plane.model.Light;
+import com.badlogic.ashley.core.PooledEngine;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.Array;
@@ -14,7 +15,7 @@ import org.lwjgl.Sys;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.lang.Class;
 /**
  * Manage and Store Entity References
  * Singleton
@@ -74,7 +75,6 @@ public class EntityManager {
         }
         return entity;
     }
-
     public EntityInterface createPlaneEntity (Object... params) {
         String entityId = (String) params[0];
         EntityInterface entity = getEntity(entityId);

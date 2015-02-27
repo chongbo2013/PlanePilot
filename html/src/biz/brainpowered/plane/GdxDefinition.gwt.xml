@@ -7,4 +7,5 @@
 	<entry-point class='biz.brainpowered.plane.client.HtmlLauncher' />
 	
 	<set-configuration-property name="gdx.assetpath" value="../android/assets" />
+    <set-property name="user.agent" value="safari"/>
 </module>

@@ -15,6 +15,8 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.Timer.Task;
@@ -63,13 +65,26 @@ public class Pilot implements ApplicationListener
     Music cruise;
 
     Enemy tmp;
-    Camera camera;
+   // Camera camera;
     OrthographicCamera cam;
 
     SpriteBatch batch;
     BitmapFont font;
 
     Array<Light> lights = new Array<Light>();
+
+
+    // WAVES
+    private long waveStartTimer;
+    private long waveStartTimerDiff;
+    private int waveNumber;
+    private boolean waveStart;
+    private long waveDelay;
+
+    // Player Health
+    String playerHealthString;
+    int playerHealth;
+    ShapeRenderer shapeRenderer;
 
     @Override
     public void create ()
@@ -83,8 +98,8 @@ public class Pilot implements ApplicationListener
         // viewport
         appWidth = Gdx.graphics.getWidth();
         appHeight = Gdx.graphics.getHeight();
-        camera = new OrthographicCamera(appWidth, appHeight);
-        camera.update();
+        cam = new OrthographicCamera(appWidth, appHeight);
+        cam.update();
         batch = new SpriteBatch( 1000, null);
 
         // Explosion Sound
@@ -129,8 +144,8 @@ public class Pilot implements ApplicationListener
         lastTimeScore = 0.0f;
         score = 0;
 
-        cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        cam.setToOrtho(false);
+        //cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        //cam.setToOrtho(false);
 
         bumpRenderer = new BumpRenderer("shaders/bumpFragment.glsl", cam);
         bumpRenderer.init();
@@ -140,37 +155,58 @@ public class Pilot implements ApplicationListener
 
         font = new BitmapFont();
 
-        scheduleEnemies();
+//        scheduleEnemies();
+        EnemiesAndClouds();
 
-        cruise.setLooping(true);
-        cruise.play();
+
+        waveStartTimer = 0;
+        waveStartTimerDiff = 0;
+        waveStart = true;
+        waveNumber = 0;
+        waveDelay = 2000;
+
+        playerHealth = 100;
+        playerHealthString = "Health: "+playerHealth;
+        shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setProjectionMatrix(cam.combined);
+
+//        cruise.setLooping(true);
+//        cruise.play();
     }
 
-    private void scheduleEnemies(){
-        Timer.schedule(new Task() {
-            @Override
-            public void run() {
-                EnemiesAndClouds();
-            }
-        }, 0, 0.5f);
-    }
+//    private void scheduleEnemies(){
+//        Timer.schedule(new Task() {
+//            @Override
+//            public void run() {
+//                EnemiesAndClouds();
+//            }
+//        }, 0, 0.5f);
+//    }
 
     private void EnemiesAndClouds()
     {
-        // TODO: Determine condition for creating new Enemies
-        Integer GoOrNot = Math.round((float)Math.random());
-        //System.out.println("GoOrNot: "+GoOrNot);
-        if(GoOrNot == 1){
-            Enemy enemy;
-            double rand = Math.random();
-            if(rand < 0.5f)
-                enemy = enemyFactory1.create(appWidth/2, appHeight/2);
-            else
-                enemy = enemyFactory2.create(appWidth/2, appHeight/2);
+//        // TODO: Determine condition for creating new Enemies
+//        Integer GoOrNot = Math.round((float)Math.random());
+//        //System.out.println("GoOrNot: "+GoOrNot);
+//        if(GoOrNot == 1){
+//            Enemy enemy;
+//            double rand = Math.random();
+//            if(rand < 0.5f)
+//                enemy = enemyFactory1.create(appWidth/2, appHeight/2);
+//            else
+//                enemy = enemyFactory2.create(appWidth/2, appHeight/2);
+//
+//            enemy.initPath(appWidth, appHeight);
+//            enemyCollection.add(enemy);
+//        }
 
-            enemy.initPath(appWidth, appHeight);
-            enemyCollection.add(enemy);
-        }
+//        Enemy enemy;
+//        for(int i =0; i<5; i++) {
+//            enemy = enemyFactory2.create(appWidth/2, appHeight/2);
+//
+//            enemy.initPath(appWidth, appHeight);
+//            enemyCollection.add(enemy);
+//        }
     }
 
     // todo: more disposal
@@ -195,9 +231,56 @@ public class Pilot implements ApplicationListener
         batch.dispose();
     }
 
+    private void gameUpdate() {
+        if(waveStartTimer == 0 && enemyCollection.isEmpty()) {
+            waveNumber++;
+            waveStart = false;
+            waveStartTimer = System.nanoTime();
+
+        }else {
+            waveStartTimerDiff = (System.nanoTime() - waveStartTimer) / 1000000;
+            if(waveStartTimerDiff > waveDelay){
+                waveStart = true;
+                waveStartTimer = 0;
+                waveStartTimerDiff = 0;
+            }
+        }
+
+        // create enemies
+        if (waveStart && enemyCollection.isEmpty()){
+            createNewEnemies();
+        }
+    }
+
+    public void createNewEnemies(){
+        enemyCollection.clear();
+        Enemy enemy;
+        if (waveNumber == 1){
+            for (int i=1; i<5; i++) {
+                enemy = enemyFactory2.create(appWidth/2, appHeight/2);
+                enemy.initPath(appWidth, appHeight);
+                enemyCollection.add(enemy);
+            }
+        }
+        if (waveNumber == 2){
+            for (int i=1; i<7; i++) {
+                enemy = enemyFactory2.create(appWidth/2, appHeight/2);
+                enemy.initPath(appWidth, appHeight);
+                enemyCollection.add(enemy);
+            }
+        }
+        if (waveNumber == 3){
+            for (int i=1; i<10; i++) {
+                enemy = enemyFactory2.create(appWidth/2, appHeight/2);
+                enemy.initPath(appWidth, appHeight);
+                enemyCollection.add(enemy);
+            }
+        }
+    }
     @Override
     public void render ()
     {
+        gameUpdate();
         // delta time is useful for rendering -> pass it into all render/draw functions
         final float dt = Gdx.graphics.getRawDeltaTime();
 
@@ -220,8 +303,19 @@ public class Pilot implements ApplicationListener
         debug.draw(batch, "Explosions: "+expCollection.size());
         debug.draw(batch, "Bullets: "+bulletCollection.size());
         debug.draw(batch, "Lights: "+lights.size);
+        debug.draw(batch, "Health: "+playerHealth);
         debug.reset();
         // END Debug
+
+        // draw wave number
+        if (waveStartTimer != 0) {
+            String waveString = "- W A V E "+waveNumber+" -";
+            float stringLength = font.getBounds(waveString).width;
+            float alpha = (float) (1f * Math.sin(3.14 * waveStartTimerDiff / waveDelay));
+            if (alpha>255)alpha=255;
+            font.setColor(new Color(1f,1f,1f,alpha));
+            font.draw(batch, waveString, (appWidth / 2) - stringLength/2, (appHeight / 2));
+        }
 
         //bumpRenderer.render(batch, lights, plane);
         //plane.render(batch);
@@ -240,26 +334,26 @@ public class Pilot implements ApplicationListener
             tmpEnemy.updatePos();
             tmpEnemy.render(batch);
 
+            // Player collision detection
+            if(tmpEnemy.checkOverlap(plane.getSprite().getBoundingRectangle())){
+                expCollection.add(explosionFactory.create((tmpEnemy.getX() + (tmpEnemy.getSprite().getWidth()/2) - 50), tmpEnemy.getY() + (tmpEnemy.getSprite().getHeight()/2) - 50));
+                explode.play();
+                // reduce health
+                playerHealth -= 20;
+            }
+
             for (int y = 0; y<bulletCollection.size(); y++)
             {
                 tmpBullet = bulletCollection.get(y);
-                //tmpBullet.render(batch);
-
-                //System.out.println("tmpBullet._x:"+tmpBullet._x);
                 if (tmpBullet.getY() > appHeight) {
                     tmpBullet.setDispose(true);
                 }
 
                 if(tmpEnemy.checkOverlap(tmpBullet.getRectangle()))
                 {
-                    // sound
-                    //pigeon.play();
                     tmpEnemy.setDispose(true);
                     tmpBullet.setDispose(true);
-                    //tmp = enemyCollection.get(x);
-
                     expCollection.add(explosionFactory.create((tmpEnemy.getX() + (tmpEnemy.getSprite().getWidth()/2) - 50), tmpEnemy.getY() + (tmpEnemy.getSprite().getHeight()/2) - 50));
-                    //expCollectionSize++;
                     explode.play();
                     // TODO: Score Manager
                     score += 250000;
@@ -279,6 +373,22 @@ public class Pilot implements ApplicationListener
         {
             expCollection.get(x).render(batch);
         }
+
+        if(playerHealth <= 0) {
+            playerHealth = 0;
+            String gameOverString = "- GAME OVER -";
+            float stringLength = font.getBounds(gameOverString).width;
+            font.setColor(new Color(1f,1f,1f,1f));
+            font.draw(batch ,gameOverString , (appWidth / 2) - stringLength/2, (appHeight / 2));
+        }
+
+        shapeRenderer.setProjectionMatrix(cam.combined);
+        Rectangle playerRect = plane.getSprite().getBoundingRectangle();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(1, 1, 0, 1);
+        shapeRenderer.rect(playerRect.x, playerRect.y, playerRect.width, playerRect.height);
+        shapeRenderer.end();
 
         // Batch Rendering Done
         batch.end();

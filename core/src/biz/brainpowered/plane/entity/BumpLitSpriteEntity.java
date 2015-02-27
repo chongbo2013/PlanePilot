@@ -20,11 +20,9 @@ public class BumpLitSpriteEntity extends SpriteEntity {
     public void render (SpriteBatch batch ) {
         //bind normal map to texture unit 1
         _normalMap.bind(1);
-
         //bind diffuse color to texture unit 0
         //important that we specify 0 otherwise we'll still be bound to glActiveTexture(GL_TEXTURE1)
         _texture.bind(0);
-
         _sprite.draw(batch);
     }
 }

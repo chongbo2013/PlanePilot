@@ -9,8 +9,8 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
         config.title = "PlanePilot";
         //config.useGL20 = true;
-        config.width = 700;
-        config.height = 1024;
+        config.width = 480;
+        config.height = 640;
 		new LwjglApplication(new Pilot(), config);
 	}
 }

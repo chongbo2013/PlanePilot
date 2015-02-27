@@ -42,7 +42,7 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
     private Sprite leftS;
     private Sprite rightS;
 
-    private Sprite _sprite; // todo: substitute this for _sprite ...? or not (go custom)
+    //private Sprite getSprite(); // todo: substitute this for getSprite() ...? or not (go custom)
 
     private Texture propeller1T;
     private Texture propeller2T;
@@ -122,7 +122,7 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
             // instead of scaling the Sprite each time (to global.planeScale), just downscale the texture once here
 
             // also set origin of sprite
-            _sprite = new Sprite();
+            //getSprite() = new Sprite();
             leftS = new Sprite(leftT);
             leftS.setSize(scale * leftT.getWidth(), scale * leftT.getHeight());
             leftS.setOrigin(leftS.getWidth() / 2, 0);
@@ -132,8 +132,8 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
             normalS = new Sprite(normalT);
             normalS.setSize(scale * normalT.getWidth(), scale * normalT.getHeight());
 
-            _sprite.set(normalS);
-            _sprite.setOrigin(normalS.getWidth() / 2, 0);
+            getSprite().set(normalS);
+            getSprite().setOrigin(normalS.getWidth() / 2, 0);
 
             // some old pasty here - move paths to config
             planeShadowTexture = new Texture(Gdx.files.internal("airplane/PLANE_8_SHADOW.png"));
@@ -234,10 +234,10 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
                 currentMaxAccelY = accelY;
         }
 
-        float maxY = appWidth - _sprite.getWidth();
+        float maxY = appWidth - getSprite().getWidth();
         float minY = 0;
 
-        float maxX = appHeight - _sprite.getHeight();
+        float maxX = appHeight - getSprite().getHeight();
         float minX = 0;
 
         float newY = 0;
@@ -247,25 +247,25 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
         // TODO: optimise, Very Inefficent
         if(currentMaxAccelX > baseAcell){
             newX = (float)currentMaxAccelX * 10;
-            _sprite.setTexture(rightT);
-            //_sprite.set(rightS);
+            getSprite().setTexture(rightT);
+            //getSprite().set(rightS);
         }
         else if(currentMaxAccelX < -baseAcell){
             newX = (float)currentMaxAccelX * 10;
-            _sprite.setTexture(leftT);
-            //_sprite.set(leftS);
+            getSprite().setTexture(leftT);
+            //getSprite().set(leftS);
         }
         else{
             newX = (float)currentMaxAccelX * 10;
-            _sprite.setTexture(normalT);
-            //_sprite.set(normalS);
+            getSprite().setTexture(normalT);
+            //getSprite().set(normalS);
         }
 
         newY = 0.0f + (float)currentMaxAccelY *10;
 
         // TODO: center shadow origin
-        float newXshadow = newX+_sprite.getX();
-        float newYshadow = newY+_sprite.getY();
+        float newXshadow = newX+getSprite().getX();
+        float newYshadow = newY+getSprite().getY();
 
         newXshadow = Math.min(Math.max(newXshadow, minY + 15), maxY + 15) / 1.3f;
         newYshadow = Math.min(Math.max(newYshadow, minX - 15), maxX - 15) / 1.3f;
@@ -276,21 +276,21 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
         //newXpropeller = Math.min(Math.max((subjectSprite.getWidth()/2),minY),maxY);
         //newYpropeller = Math.min(Math.max(newYpropeller,minX+(subjectSprite.getHeight())-15),maxX+(subjectSprite.getHeight()/2)-5);
 
-        newX = Math.min(Math.max(newX + _sprite.getX(), minY), maxY);
-        newY = Math.min(Math.max(newY + _sprite.getY(), minX), maxX);
+        newX = Math.min(Math.max(newX + getSprite().getX(), minY), maxY);
+        newY = Math.min(Math.max(newY + getSprite().getY(), minX), maxX);
 
-        newXpropeller = newX + (_sprite.getWidth()/2) - (propeller.getWidth()/2);
-        newYpropeller = newY + (_sprite.getHeight())-(15*scale);
+        newXpropeller = newX + (getSprite().getWidth()/2) - (propeller.getWidth()/2);
+        newYpropeller = newY + (getSprite().getHeight())-(15*scale);
 
-        //_sprite.setPosition(Math.round(newX), Math.round(newY));
-        //_sprite.translateX(Math.round(newX), Math.round(newY));
+        //getSprite().setPosition(Math.round(newX), Math.round(newY));
+        //getSprite().translateX(Math.round(newX), Math.round(newY));
         planeShadow.setPosition(newXshadow, newYshadow);
         propeller.setPosition(newXpropeller, newYpropeller);
 
-        _sprite.setX(Math.round(newX));
+        getSprite().setX(Math.round(newX));
 
         //System.out.println("newX: "+newX);
-        _sprite.setY(Math.round(newY));
+        getSprite().setY(Math.round(newY));
     }
 
     public void dispose(){
@@ -307,7 +307,8 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
         //bind diffuse color to texture unit 0
         //important that we specify 0 otherwise we'll still be bound to glActiveTexture(GL_TEXTURE1)
         _texture.bind(0);
-        _sprite.draw(batch);
+        getSprite().draw(batch);
+        System.out.println("getSprite().rectangle:"+getSprite().getBoundingRectangle().getX()+" "+getSprite().getBoundingRectangle().getY());
         propeller.draw(batch);
     }
 
@@ -315,7 +316,7 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
     // Utility functions (to be refactored)
     public Rectangle getBoundingBox()
     {
-        return _sprite.getBoundingRectangle();
+        return getSprite().getBoundingRectangle();
     }
 
     public void setBulletFactory(BulletFactory bf)
@@ -325,11 +326,15 @@ public class Plane extends BumpLitSpriteEntity implements InputProcessor
 
     public void fireBullet()
     {
-        float bulletX = _sprite.getX() + (_sprite.getWidth() / 2);
-        float bulletY = _sprite.getY() + (_sprite.getHeight());
+        float bulletX = getSprite().getX() + (getSprite().getWidth() / 2);
+        float bulletY = getSprite().getY() + (getSprite().getHeight());
         bulletCollection.add(bulletFactory.create(bulletX, bulletY, 90f, 1000f));
         fire.play();
         //bulletCollectionSize++;
+    }
+
+    public Sprite getSprite() {
+        return this._sprite;
     }
 
     @Override
